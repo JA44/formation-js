@@ -1,0 +1,39 @@
+<!DOCTYPE html><html lang="en"><head><title>app/lib/location</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content="../../"><meta name="groc-document-path" content="app/lib/location"><meta name="groc-project-path" content="app/lib/location.js"><link rel="stylesheet" type="text/css" media="all" href="../../assets/style.css"><script type="text/javascript" src="../../assets/behavior.js"></script><body><div id="meta"><div class="file-path">app/lib/location.js</div></div><div id="document"><div class="segment"><div class="comments "><div class="wrapper"><h1 id="interface-golocalisation">Interface géolocalisation</h1></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="hljs-pi">
+'use strict'</span>;</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Encapsulation du service de géolocalisation.  Va envoyer
+un message si le client ne prend pas en charge l&#39;API de
+géolocalisation W3C.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">var</span> _ = <span class="hljs-built_in">require</span>(<span class="hljs-string">'underscore'</span>);
+<span class="hljs-keyword">var</span> cnxSvc = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lib/connectivity'</span>);</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Si cette API n&#39;est pas exploitable pour une raison quelconque
+(ex. connexion à un DSLAM mal équipé/configuré, genre au fin
+fond de la Creuse…), on peut travailler avec cette appli en
+plaçant cette variable <code>$FAKE</code> à <code>true</code>, ce qui renverra
+&quot;en dur&quot; les coordonnées du siège de Delicious Insights ;-)</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">var</span> $FAKE = <span class="hljs-literal">false</span>;</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Persistence localStorage de la dernière géoloc utilisée.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">var</span> latestGeoloc = localStorage.latestGeoloc || <span class="hljs-literal">null</span>;
+<span class="hljs-keyword">if</span> (latestGeoloc) {
+  latestGeoloc = _.map(latestGeoloc.split(<span class="hljs-string">','</span>), <span class="hljs-built_in">Number</span>);
+}</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Voici la méthode-clé de vérification de la géolocalisation.
+C&#39;est la seule méthode exposée par le module.  L&#39;API W3C tente
+en général d&#39;exploiter une précision maximale (par exemple en
+interpolant les données issues de points d&#39;accès Wi-Fi proches).
+Le callback est appelé soit avec une latitude et une longitude
+(en cas de succès) soit avec un message d&#39;erreur.
+Performance : la géoloc navigateur par des moyens non-GPS
+(ex. interpolation Wi-Fi, requêtage DSLAM…) peut prendre pas
+mal de temps (4-6s pendant mes tests).</p></div></div><div class="code"><div class="wrapper"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getCurrentLocation</span><span class="hljs-params">(callback)</span> </span>{
+  <span class="hljs-keyword">if</span> (!_.isFunction(callback))
+    <span class="hljs-keyword">throw</span> <span class="hljs-string">'Missing or invalid callback'</span>;
+  <span class="hljs-keyword">if</span> (!(navigator.geolocation) || !cnxSvc.isOnline() || $FAKE) {
+    <span class="hljs-keyword">var</span> geoloc = latestGeoloc || [<span class="hljs-number">48.88268482</span>, <span class="hljs-number">2.32229512</span>];
+    callback.apply(<span class="hljs-literal">null</span>, geoloc);
+  } <span class="hljs-keyword">else</span> {
+    navigator.geolocation.getCurrentPosition(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(position)</span> </span>{
+      <span class="hljs-keyword">var</span> lat = position.coords.latitude, lng = position.coords.longitude;
+      latestGeoloc = [lat, lng];
+      localStorage.latestGeoloc = latestGeoloc.join(<span class="hljs-string">','</span>);
+      callback(lat, lng);
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(msg)</span> </span>{
+      <span class="hljs-keyword">if</span> (!_.isString(msg)) msg = <span class="hljs-string">'Geolocation failure'</span>;
+      callback(msg);
+    });
+  }
+}
+
+exports.getCurrentLocation = getCurrentLocation;</div></div></div></div></body></html>

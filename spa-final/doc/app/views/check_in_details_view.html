@@ -1,0 +1,44 @@
+<!DOCTYPE html><html lang="en"><head><title>app/views/check_in_details_view</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content="../../"><meta name="groc-document-path" content="app/views/check_in_details_view"><meta name="groc-project-path" content="app/views/check_in_details_view.js"><link rel="stylesheet" type="text/css" media="all" href="../../assets/style.css"><script type="text/javascript" src="../../assets/behavior.js"></script><body><div id="meta"><div class="file-path">app/views/check_in_details_view.js</div></div><div id="document"><div class="segment"><div class="comments "><div class="wrapper"><h1 id="contrleur-dtails-de-check-ins">Contrôleur détails de check-ins</h1></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="hljs-pi">
+'use strict'</span>;
+
+<span class="hljs-keyword">var</span> $ = <span class="hljs-built_in">require</span>(<span class="hljs-string">'jquery'</span>);
+<span class="hljs-keyword">var</span> Backbone = <span class="hljs-built_in">require</span>(<span class="hljs-string">'backbone'</span>);
+<span class="hljs-keyword">var</span> View = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./view'</span>);
+
+<span class="hljs-keyword">var</span> CheckInDetailsView = View.extend({</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>On va laisser <code>Backbone.View</code> (dont on hérite) construire un élément
+d&#39;enrobage pertinent, en l&#39;occurrence un <code>&lt;div id=&quot;checkInDetails&quot; class=&quot;modal fade&quot;&gt;</code>.
+Pour ce faire, on utilise les propriétés prédéfinies <code>className</code> et <code>id</code>.</p></div></div><div class="code"><div class="wrapper">  className: <span class="hljs-string">'modal fade'</span>,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Tout type de fermeture du modal par Bootstrap doit aboutir à un traitement complémentaire
+qu&#39;on colle dans <code>wrapUp</code>.</p></div></div><div class="code"><div class="wrapper">  events: {
+    <span class="hljs-string">'hidden.bs.modal'</span>: <span class="hljs-string">'wrapUp'</span>
+  },
+
+  id: <span class="hljs-string">'checkInDetails'</span>,
+  template: <span class="hljs-built_in">require</span>(<span class="hljs-string">'./templates/check_in_details'</span>),
+
+  wrapUp: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">wrapUp</span><span class="hljs-params">()</span> </span>{</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>…et si ce n&#39;est pas une annulation due à une URL obsolète/incorrecte de check-in,
+donc plutôt une fermeture manuelle du dialogue, naviguer normalement vers la home
+(mais comme elle est déjà renderée, inutile de déclencher la méthode de routeur associée).</p></div></div><div class="code"><div class="wrapper">    <span class="hljs-keyword">if</span> (!cancelling) {
+      Backbone.history.navigate(<span class="hljs-string">''</span>);
+    }
+    cancelling = <span class="hljs-literal">false</span>;
+  }
+}, {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Les méthodes de ce deuxième objet de paramètres sont les méthodes « statiques »</p></div></div><div class="code"><div class="wrapper">  cancel: cancel,
+  display: display
+});
+
+<span class="hljs-keyword">var</span> singleton = <span class="hljs-keyword">new</span> CheckInDetailsView(), cancelling = <span class="hljs-literal">false</span>;</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Annulation d&#39;un éventuel dialogue, en cas d&#39;URL de check-in introuvable ou incorrect.
+Comme le dialogue n&#39;est pas forcément visible, on n&#39;aura pas forcément d&#39;événement
+<code>hidden</code> déclenché, donc on fait la nav de remplacement ici.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">cancel</span><span class="hljs-params">()</span> </span>{
+  cancelling = <span class="hljs-literal">true</span>;
+  singleton.$el.modal(<span class="hljs-string">'hide'</span>);
+  Backbone.history.navigate(<span class="hljs-string">''</span>, { replace: <span class="hljs-literal">true</span> });
+}</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Affichage (1er appel ) ou mise à jour (changement d&#39;URL alors que le modal est affiché)
+du dialogue sur base d&#39;un modèle de check-in fourni par le routeur.  On n&#39;aura pas d&#39;animation
+si le dialogue est déjà là, mais ce n&#39;est pas plus mal.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">display</span><span class="hljs-params">(model)</span> </span>{
+  singleton.model = model;
+  singleton.render();
+  $(<span class="hljs-string">'body'</span>).append(singleton.el);
+  singleton.$el.modal(<span class="hljs-string">'show'</span>);
+}
+
+<span class="hljs-built_in">module</span>.exports = CheckInDetailsView;</div></div></div></div></body></html>

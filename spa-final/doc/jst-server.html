@@ -1,0 +1,47 @@
+<!DOCTYPE html><html lang="en"><head><title>jst-server</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content=""><meta name="groc-document-path" content="jst-server"><meta name="groc-project-path" content="jst-server.coffee"><link rel="stylesheet" type="text/css" media="all" href="assets/style.css"><script type="text/javascript" src="assets/behavior.js"></script><body><div id="meta"><div class="file-path">jst-server.coffee</div></div><div id="document"><div class="segment"><div class="comments "><div class="wrapper"><h1 id="mini-serveur-applicatif-pour-l39appli">Mini-serveur applicatif pour l&#39;appli</h1></div></div></div><div class="segment"><div class="code"><div class="wrapper">bodyParser   = <span class="hljs-built_in">require</span>(<span class="hljs-string">'body-parser'</span>)
+errorHandler = <span class="hljs-built_in">require</span>(<span class="hljs-string">'errorhandler'</span>)
+express      = <span class="hljs-built_in">require</span>(<span class="hljs-string">'express'</span>)
+fs           = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>)
+http         = <span class="hljs-built_in">require</span>(<span class="hljs-string">'http'</span>)
+logger       = <span class="hljs-built_in">require</span>(<span class="hljs-string">'morgan'</span>)
+socketio     = <span class="hljs-built_in">require</span>(<span class="hljs-string">'socket.io'</span>)
+low          = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lowdb'</span>)
+
+<span class="hljs-keyword">try</span>
+  low.load(<span class="hljs-string">'db.json'</span>)
+<span class="hljs-keyword">catch</span>
+  <span class="hljs-built_in">console</span>.error <span class="hljs-string">"Cannot load db.json"</span>
+DB = low(<span class="hljs-string">'checkins'</span>).sortBy(<span class="hljs-string">'key'</span>).value().reverse()
+
+exports.<span class="hljs-function"><span class="hljs-title">startServer</span> = <span class="hljs-params">(port, path, callback)</span> -&gt;</span>
+  app = express()
+  server = http.createServer(app)
+  io = socketio(server)</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>The basics</p></div></div><div class="code"><div class="wrapper">  app.use express.static <span class="hljs-string">"<span class="hljs-subst">#{__dirname}</span>/public"</span>
+  app.use errorHandler()
+  app.use logger(<span class="hljs-string">':method :url'</span>)
+  app.use bodyParser.urlencoded({ <span class="hljs-attribute">extended</span>: <span class="hljs-literal">true</span> })
+  app.use bodyParser.json()
+
+  app.get <span class="hljs-string">'/'</span>, <span class="hljs-function"><span class="hljs-params">(request, response)</span> -&gt;</span>
+    response.sendfile <span class="hljs-string">'public/index.html'</span></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Sync endpoints (Ajax)</p></div></div><div class="code"><div class="wrapper">  app.get <span class="hljs-string">'/checkins'</span>, <span class="hljs-function"><span class="hljs-params">(request, response)</span> -&gt;</span>
+    response.json DB[<span class="hljs-number">0.</span>.<span class="hljs-number">.10</span>]
+
+  app.post <span class="hljs-string">'/checkins'</span>, <span class="hljs-function"><span class="hljs-params">(request, response)</span> -&gt;</span>
+    checkIn = request.body
+    checkIn.id = DB.length + <span class="hljs-number">1</span>
+    DB.unshift checkIn
+    low(<span class="hljs-string">'checkins'</span>).insert(checkIn);
+    response.status(<span class="hljs-number">201</span>).json { <span class="hljs-attribute">id</span>: checkIn.id }
+    io.emit <span class="hljs-string">'checkin'</span>, checkIn
+
+  app.get <span class="hljs-string">'/checkins/:id'</span>, <span class="hljs-function"><span class="hljs-params">(request, response)</span> -&gt;</span>
+    id = +request.params.id
+    result = (ci <span class="hljs-keyword">for</span> ci <span class="hljs-keyword">in</span> DB <span class="hljs-keyword">when</span> ci.id <span class="hljs-keyword">is</span> id)
+    <span class="hljs-keyword">if</span> result[<span class="hljs-number">0</span>]
+      response.json result[<span class="hljs-number">0</span>]
+    <span class="hljs-keyword">else</span>
+      response.status(<span class="hljs-number">404</span>).json {}
+
+  server.listen port,<span class="hljs-function"> -&gt;</span>
+    <span class="hljs-built_in">console</span>.log <span class="hljs-string">"Listening on port <span class="hljs-subst">#{port}</span>… WebSockets enabled."</span>
+    callback()</div></div></div></div></body></html>

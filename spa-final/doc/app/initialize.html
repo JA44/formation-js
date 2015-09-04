@@ -1,0 +1,17 @@
+<!DOCTYPE html><html lang="en"><head><title>app/initialize</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content="../"><meta name="groc-document-path" content="app/initialize"><meta name="groc-project-path" content="app/initialize.js"><link rel="stylesheet" type="text/css" media="all" href="../assets/style.css"><script type="text/javascript" src="../assets/behavior.js"></script><body><div id="meta"><div class="file-path">app/initialize.js</div></div><div id="document"><div class="segment"><div class="comments "><div class="wrapper"><h1 id="point-d39entre-de-l39appli">Point d&#39;entrée de l&#39;appli</h1></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="hljs-pi">
+'use strict'</span>;</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Toi aussi tu es sur un vieux browser de m… ?</p></div></div><div class="code"><div class="wrapper"><span class="hljs-built_in">require</span>(<span class="hljs-string">'console-helper'</span>);</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><h2 id="setup-backbone--mediator">Setup Backbone + Mediator</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="hljs-keyword">var</span> $ = <span class="hljs-built_in">require</span>(<span class="hljs-string">'jquery'</span>);
+<span class="hljs-keyword">var</span> Backbone = <span class="hljs-built_in">require</span>(<span class="hljs-string">'backbone'</span>);</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Backbone ne tente pas un require(&#39;jquery&#39;), il exige le global.  Bizarre…</p></div></div><div class="code"><div class="wrapper">Backbone.$ = $;</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Activer les plugins</p></div></div><div class="code"><div class="wrapper"><span class="hljs-built_in">require</span>(<span class="hljs-string">'backbone-mediator'</span>);
+<span class="hljs-built_in">require</span>(<span class="hljs-string">'backbone-stickit'</span>);</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Charger les modules Bootstrap 3 utiles à notre appli (module custom)</p></div></div><div class="code"><div class="wrapper"><span class="hljs-built_in">require</span>(<span class="hljs-string">'bootstrap'</span>);</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><h2 id="initialiseur">Initialiseur</h2>
+<p>Se contente de faire deux choses :</p>
+<ol>
+<li>Instancier l&#39;application JS et l&#39;initialiser</li>
+<li>Activer la gestion des routes Backbone (même si on ne s&#39;en
+sert pas particulièrement ici)</li>
+</ol></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">var</span> moment = <span class="hljs-built_in">require</span>(<span class="hljs-string">'moment'</span>);
+<span class="hljs-keyword">var</span> application = <span class="hljs-built_in">require</span>(<span class="hljs-string">'application'</span>);
+
+$(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
+  moment.lang(<span class="hljs-string">'fr'</span>);
+  application.initialize();
+  Backbone.history.start();
+});</div></div></div></div></body></html>

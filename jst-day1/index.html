@@ -1,0 +1,1753 @@
+<!doctype html>
+<html lang="fr">
+
+  <head>
+    <meta charset="utf-8">
+    <title>JS Total • 1ère partie, 16/12/2014</title>
+
+    <meta name="author" content="Christophe Porteneuve">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="css/reveal.min.css">
+    <link rel="stylesheet" href="css/theme/js-attitude.css" id="theme">
+
+    <!-- For syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/tomorrow.css">
+
+    <!-- If the query includes 'print-pdf', use the PDF print sheet -->
+    <script>
+      if (window.location.search.match( /print-pdf/gi))
+        document.write( '<link rel="stylesheet" href="css/print/pdf.css" type="text/css" media="all">' );
+      else
+        document.write( '<link rel="stylesheet" href="css/print/paper.css" type="text/css" media="print">' );;
+    </script>
+
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+
+  <body class="no-anims">
+
+    <div class="reveal">
+
+      <!-- Any section element inside of this container is displayed as a slide -->
+      <div class="slides">
+        <section id="intro">
+          <h1>JS Total</h1>
+          <h3 data-marker="intro-date">1ère partie, 16/12/2014</h3>
+          <h4 data-marker="intro-trainers">Jonathan Blanchet @ JS Attitude</h4>
+          <script>
+            // Delicously hacky. Look away.
+            if( navigator.userAgent.match( /(iPhone|iPad|iPod|Android)/i ) ) document.write( '<p style="color: rgba(0,0,0,0.3); text-shadow: none;">('+'Tap to navigate'+')</p>' );
+          </script>
+        </section>
+
+        <section id="the-guy">
+          <h1><span data-marker="trainers-heading">Le type</span>, là, devant</h1>
+
+          <div data-marker="trainers">
+            <h2>Jonathan Blanchet</h2>
+            <h4>Développeur Web freelance, Intervenant aux Gobelins (JS), Membre du collectif multimédia Lab212</h4>
+          </div>
+        </section>
+
+        <section id="overview">
+          <h1>JS Total</h1>
+          <h4 data-marker="overview-dates">4 journées du 16 au 19 décembre</h4>
+
+          <ol>
+            <li>Aujourd’hui&nbsp;: JS, le langage pur</li>
+            <li><span data-marker="day2">Demain</span> : Outils, DevTools, modules et templating</li>
+            <li><span data-marker="day3">Jeudi</span> : développement d’une SPA complète</li>
+            <li><span data-marker="day4">Vendredi</span> : industrialisation et web mobile</li>
+          </ol>
+
+          <aside class="notes" data-markdown>
+            Les journées vont se dérouler à peu près comme suit :
+
+            1. Petit-dej à 9h15
+            2. On démarre à 9h30 ; pas de pause le matin, 3h c'est un peu court
+            3. Pause-dej de 12h30 à 13h45 environ
+            4. Pause de 15' vers 16h
+            5. On arrête à 18h
+
+            On déjeune dans des restos sympa, en alternant entre bonne brasserie (rotonde) et super petit resto (Amphytrion).
+
+            Les journées alternent la charge cognitive aussi : intense aujourd'hui (beaucoup de conceptuel) et jeudi (beaucoup de code), plus light demain (outils, beaucoup d'exos) et vendredi (surtout l'après-midi, plus relax).
+
+            Brief Wifi, toilettes, on peut se lever, manger
+
+            Reparler des autres formations : JSP, NodeJS, Git
+
+            Mail de debrief (zip, slides) + feedback à chaud + questionnaire de feedback à froid
+          </aside>
+        </section>
+
+        <section id="native-types">
+          <section class="chapter">
+            <h1>Apprendre à connaître</h1>
+            <h4>les types JS natifs</h4>
+          </section>
+
+          <section id="objects">
+            <h1>Objets</h1>
+            <h4>Hashes, maps et dictionaries…</h4>
+
+            <pre><code class="javascript">var obj = { first: 'Robert', last: 'Smith', age: 36 };
+obj.first          // => 'Robert'
+obj['age']         // => 36
+
+obj.first = 'Bob';
+obj['first']       // => 'Bob'
+
+obj[42] = 'yo';
+obj[42]            // => 'yo'
+obj['42']          // => 'yo'
+obj.42             // => SyntaxError
+
+// Itération : for…in</code></pre>
+
+            <aside class="notes" data-markdown>
+              À part `null` et `undefined`, tout est un objet en JS.  Même les nombres.  Même les fonctions.  L'opérateur point (`.`) est dit *d'indexation directe*, car le code indique en dur le nom de la propriété.
+
+              Les clés sont forcément traitées **en tant que String**.  Du coup quand elles ne constituent pas des identifiants valides, par exemple quand c'est `42` ou la chaîne vide (`''`), on passe par l'opérateur *d'indexation indirecte*, les crochets (on en reparlera plus tard).
+
+              Identifiant valide : tout caractère UTF8 valable
+
+              virgule finale valide (sauf < IE 8)
+
+              ordre pas garanti (généralement l’ordre ajouté)
+
+              C'est pourquoi JS n'a pas de types Hash/Map/Dictionary/etc. : les objets jouent ce rôle.  Mais pour que ça soit utile, il faut de quoi itérer : c'est le sens de `for…in`.  Il ne sert **pas** à boucler sur un tableau, mais à **itérer sur les propriétés énumérables d'un objet** (démo tableau et ses propriétés énumérables ou non : `length`, `join`…).  En ES &lt; 5, toutes nos props perso sont énumérables.
+            </aside>
+          </section>
+
+          <section id="string">
+            <h1>String</h1>
+
+            <pre><code class="javascript">'déjà' < 'demain'                 // => false
+'déjà'.localeCompare('demain')    // => -1 ('déjà' avant 'demain' -> YEESSS!)
+
+'déjà !'.toLocaleUpperCase()      // => 'DÉJÀ !'
+'ÇA POUTRE'.toLocaleLowerCase()   // => 'ça poutre'
+
+'one,two,three'.split(',')        // => ['one', 'two', 'three']
+'one,,two,three'.split(/\W+/)     // => ['one', 'two', 'three']
+
+'hello'.slice(1, -2)              // => 'el' -> [1;length-2[</code></pre>
+
+            <aside class="notes" data-markdown>
+              Les chaînes sont Unicode, spécifiquement stockées en UCS-2 (= UTF-16LE).  Aucun risque de couper un caractère au milieu de son *codepoint*.
+
+              pas de différence entre '' et "" (sauf JSON)
+
+              Ordre lexicographique (celui de la table de car.), donc ordre naturel (ex. `&lt;`) mais pas super utile : toujours utiliser `localeCompare`.
+
+              exemple déjà < demain : le é est loin derrière le e.
+
+              JS Intl en cours
+
+              ['Stuart', 'Stéphane', 'Émile'].sort()
+
+              ['Stuart', 'Stéphane', 'Émile'].sort( ( function(a,b) { return a.localeCompare(b) } ) )
+
+              `split` souvent plus utile avec une regex (téléphones, CBs, etc.)
+              ex : CB.split(/\W+/) => tout sauf alphanumérique (et _)
+
+              Oubliez `substr`(index, longueur) :
+
+              * légèrement différent sur JScript (IE &lt; 9) => pas de valeur négative sur l'index
+
+              * comment ne pas confondre avec substr ?
+
+              Oubliez `substring` / substr et préférez `slice` : index négatifs, pratique pour récupérer les X derniers :
+
+              * 'hello'.substring(-2) => boum pas d'index négatif
+
+              * 'hello'.substring(0, -2) => boum pas d'index négatif
+
+              * 'hello'.substr(0, -2) => pas d'index négatif sur la longueur
+
+              * "hello".substring("hello".length - 2) => MOCHE
+
+              * API identique chez les tableaux
+
+              'hello'.slice(-2)
+
+              FUN : 'hello'.sup();
+
+            </aside>
+          </section>
+
+          <section id="array-basis">
+            <h1>Array (la base)</h1>
+            <pre><code class="javascript" data-noescape>var names = [<span data-marker="trainees-list">"Alexis", "Didier", "Falihery", "Jean-Alain", "Jean-François",
+  "Ludwig", "Mathieu", "Raphaël", "Sergio"</span>];
+
+names.length
+// => <span data-marker"trainees-count">10</span>. R/W : permet de réutiliser un tableau super-VITE !
+
+names[0]
+// => '<span data-marker="trainees-first">Alexis</span>'
+
+// SAYMAL™
+for (var index = 0; index &lt; names.length; index++)
+  doSomething(names[index]);
+
+// SAYMIEU™
+for (var index = 0, len = names.length; index &lt; len; index++)
+  doSomething(names[index]);</code></pre>
+
+            <aside class="notes" data-markdown>
+              index numériques : sparse array : names[11] = 'moi' (undefined par défaut)
+
+              boucler proprement sur du sparse array : for(var i = 0; i < names.length; i++){ if(i in names) console.log( names[i]) }
+
+              Insister à mort sur l'importance de mettre la longueur en cache ; fouiller sur JSPerf pour divers exemples si besoin.  OSEF du `++` préfixe et suffixe, sur les runtimes JS de moins de 10 ans…
+
+              Si la longueur devait changer en cours de boucle, on ne ferait de toutes façons pas de `for` mais plutôt un `while` ; ceci dit la tenue en cache de la longueur reste pertinente.
+
+              Rappeler que `for…in` ne sert pas à ça (dangereux sur certains IE).  Et que les itérateurs natifs (ex. `forEach`, `map`) ne sont qu'en ES5+.
+
+              names.forEach( function(value, index, tableau) { console.log( value, index ) })
+
+              Mais on utilisera jQuery ou Underscore pour tous les cas avancés, et eux font bien sûr l'opti de longueur en cache.
+
+              console.dir(names) => un tableau est un peu un objet
+
+              names.prof = 'JP' => toujours pas listable via une boucle for ou même .forEach()
+
+
+            </aside>
+          </section>
+
+          <section id="array-derived">
+            <h1>Array (extraction)</h1>
+
+            <pre><code class="javascript">var data = [1, 2, 3];
+
+// arr1.concat(arg…) -> arr2 [déroule sur 1 niveau, ni "shallow" ni "deep"]
+data.concat(4, 5, 6)     // => [1, 2, 3, 4, 5, 6]
+data.concat([4, 5, 6])   // => [1, 2, 3, 4, 5, 6]
+data.concat(4, [5, 6])   // => [1, 2, 3, 4, 5, 6]
+data.concat([4, [5, 6]]) // => [1, 2, 3, 4, [5, 6]] -- 2 niveaux !
+data                     // => [1, 2, 3] -- intact !
+
+// arr.join([sep = ',']) -> String
+data.join()   // => '1,2,3'
+data.join('') // => '123' -- Fréquent en construisant du HTML
+
+// arr1.slice(signedBegin[, signedEnd = length]) -> arr2 -- négatif ok partout !
+data.slice(1)      // => [2, 3]
+data.slice(1, 1)   // => []
+data.slice(1, 2)   // => [2]
+data.slice(1, -1)  // => [2]
+data.slice(-2)     // => [2, 3]
+data.slice(-2, 2)  // => [2]
+data.slice(-2, -1) // => [2]</code></pre>
+
+            <aside class="notes" data-markdown>
+              `concat` a voulu trop jouer son malin, ça donne un comportement assez bizarre, puisque les 3 premiers appels ont le même résultat !  Bien rappeler qu'il n'est **pas modifiant** (mais qu'on pourra en faire un modifiant plus tard)
+
+              `join` est peut-être le seul (celui de JS) qui utilise un séparateur non vide par défaut (la virgule), ce qui vient sans doute de `Array#toString`.
+
+              .slice() : index négatif OK, comme les string ! Plus expressif
+
+              1er index inclusif, 2nd index exclusif
+
+              data toujours intact
+
+            </aside>
+          </section>
+
+          <section id="array-writing">
+            <h1>Array (modifier)</h1>
+
+            <pre><code class="javascript">var arr = ['one', 'two', 'three'];
+arr.push('four');                 // => 4
+arr.push('five', 'six', 'seven'); // => 7
+arr.pop()                  // => 'seven'
+arr                        // => ['one', 'two', 'three', 'four', 'five', 'six']
+arr.shift()                // => 'one'
+arr                        // => ['two', 'three', 'four', 'five', 'six']
+arr.unshift('zero', 'one') // => 7
+arr                        // => ['zero', 'one', 'two', 'three', 'four', 'five', 'six']
+
+// splice(signedIndex, howManyToRemove[, replacingArg…])
+// -- pas confondre avec slice !
+arr.splice(0, 1)      // => ['zero']
+arr.splice(-2, 2)     // => ['five', 'six']
+arr.splice(0, 3, '3') // => ['one', 'two', 'three']
+arr                   // => ['3', 'four']</code></pre>
+
+            <aside class="notes" data-markdown>
+              `push` et `unshift` acceptent autant d'arguments qu'on veut, et renvoient la nouvelle longueur.
+
+              `push` / `pop` : à la fin. `shift` / `unshift` : au début.
+
+              `pop` et `shift` renvoient la valeur;
+
+              `splice` c'est le couteau suisse pour les tableaux. slice = index début + fin, splice = index + nombre
+
+              on peut prendre les 2 derniers : arr.splice(-2)
+
+              on peut préciser un argument de remplacement, sinon poubelle
+
+              AVANT 11H ? : on pourra facilement faire un `multiPop` et `multiShift` sur base de `splice`.  Pareil pour un `deleteAt`.  Si on a le temps, le proposer soit comme exo "oral" collaboratif, soit comme exo individuel en éditeur + console.
+
+              Signature (dégages les 3 derniers, modifiant, renvoie les éléments supprimés) : multiPop( arr, 3 )
+
+              function multiPop(arr, nombre) {
+                return arr.splice(nombre * -1);
+              }
+
+
+              Signature (dégage les 3 premiers, modifiant, renvoie les éléments supprimés)
+
+              function multiShift(arr, nombre) {
+                return arr.splice(0, nombre);
+              }
+
+
+
+            </aside>
+          </section>
+
+          <section id="dont-use-new">
+            <h1>Je tue le chien si…</h1>
+            <h4>tu utilises bêtement <code>new</code> sur des natifs</h4>
+
+            <pre><code class="javascript" data-noescape><b class="wrong">new String(…) </b>
+<b class="wrong">new Boolean(…)</b>
+<b class="wrong">new Number(…) </b>
+
+new Array(…)    // RAREMENT
+new Function(…) // RAREMENT
+new RegExp(…)   // PARFOIS, pour des regex dynamiques
+
+<b class="right">new Date(…)</b>
+
+</code></pre>
+
+            <p><a href="http://www.js-attitude.fr/2012/11/22/pourquoi-jamais-new-sur-natifs-en-js/?utm_source=slides&amp;utm_medium=referrals&amp;utm_campaign=jstotal-slides" style="font-size: 50%;">L’article détaillé sur JS Attitude</a></p>
+
+            <aside class="notes" data-markdown>
+              Le principal souci est que ça flingue la *truthiness* des valeurs, car on a alors des objets traités comme tels, jamais comme primitives (ce qui serait le cas des litéraux `String`, `Number` et `Boolean`).
+
+              * var chaine = ''; if(!chaine) console.warn('vide')
+
+              * var chaine = new String(''); if(!chaine) console.warn('vide') else console.warn('oops');
+
+              * `if (new Boolean(false)) console.warn('oops')`.
+
+              `new Array` n'a qu'un intérêt périphérique pour multiplier une `String`
+
+              new Array(71).join('-')
+
+              et `new Function` pour *sandboxer*, mais c'est généralement une de nos libs qui le fera (ex. Ajax jQuery qui récupère du JS).
+
+              `new Date`, `new RegExp` => OK
+            </aside>
+          </section>
+        </section>
+
+        <section id="obscure-stuff">
+          <section class="chapter">
+            <h1>Aspects méconnus</h1>
+          </section>
+
+          <section id="strict-equal">
+            <h1>== ou === ?!</h1>
+
+            <pre><code class="javascript">42 == '42'        // => true  -- Argh, ça sent le PHP, là…
+null == undefined // => true  -- hmmm…
+null == 0         // => false -- heureusement !
+0 == undefined    // => false -- heureusement !
+0 == false        // => true  -- Façon C…
+1 == true         // => true  -- Façon C…
+42 == true        // => false -- Watcha ?! (x == ToNumber(y), ES3 §11.9.3)
+'0' == false      // => true  -- Woah !
+'' == false       // => true  -- Yowza ! 8-O  On y reviendra…
+NaN == NaN        // => false -- Bin oué, c’est le principe…
+
+// avec ===, fini de jouer : vérif valeur ET TYPE !
+
+42 === '42'        // => false
+null === undefined // => false
+null === 0         // => false
+0 === undefined    // => false
+0 === false        // => false
+'0' === false      // => false
+NaN === NaN        // => false -- rien à faire !</code></pre>
+
+            <aside class="notes" data-markdown>
+              strict : moins piégeux et *plus rapide* (court-circuit si pas le même type, opérations de comparaison ultra-rapides : une comparaison de pointeur + un `memcmp`).
+
+              == null : spécial, mais typeof object
+
+              number vers boolean : tout ce qui n'est pas 1 est false
+
+              Gaffe notamment à la divergence entre *truthiness* (`if (x)` par exemple) et les protocoles de conversion implicite (`if (x == true)`) qui ont lieu sur toute opération binaire (= à deux opérandes).  Pas isos, puisque la promotion ne se fait *jamais* vers `Boolean`, toujours vers `Number` ou `String`.
+
+              * if(42) console.log('true') // true var true = 1
+              * if(42 == true) console.log('true') // RIEN
+
+
+            </aside>
+          </section>
+
+          <section id="brackets">
+            <h1>Le capitaine []</h1>
+
+            <pre><code class="javascript" data-noescape>// Équivalence stricte statique / dynamique :
+obj.x === obj['x']
+
+// Trop La Lose
+var angle = 60, result;
+if (useSin)
+  result = Math.sin(angle);
+else
+  result = Math.cos(angle);
+
+<span class="fragment">// Moins La Lose
+var angle = 60, result = useSin ? Math.sin(angle) : Math.cos(angle);
+</span>
+<span class="fragment">// Trop La Classe
+var angle = 60, result = Math[useSin ? 'sin' : 'cos'](angle);</span>
+
+<span class="fragment">// Cas classiques :
+element[display ? 'show' : 'hide']();
+element[(enable ? 'add' : 'remove') + 'Class']('enabled'); // too much</span></code></pre>
+
+            <aside class="notes" data-markdown>
+              La vraie puissance des `[]` est évidemment la sélection *dynamique* d'une propriété, et donc d'une méthode.  Très fréquent dans le code des bonnes libs, on s'en servira nous-même une ou deux fois jeudi.
+
+              Utilisé par jQuery dans jQuery.easing. ex: http://code.jquery.com/jquery-1.11.0.js => chercher jQuery.easing[
+
+              implémenter un système de convention : donne moi un objet qui contient start et stop par exemple
+
+              plus lisible notamment pour
+
+            </aside>
+          </section>
+
+          <section id="in-and-delete">
+            <h1>in et delete</h1>
+
+            <pre><code class="javascript" data-noescape>var translator = { name: 'Christophe', langs: ['fr', 'en'] };
+
+'name' in translator        // => true
+translator.age = <span data-marker="chris-age">37</span>;
+'age' in translator         // => true
+translator.age = null;
+'age' in translator         // => true
+delete translator.age
+'age' in translator         // => false
+translator.age              // => undefined
+
+0 in translator.langs       // => true
+'0' in translator.langs     // => true
+translator.langs[3] = 'de';
+2 in translator.langs       // => false
+3 in translator.langs       // => true
+delete translator.langs[3]
+translator.langs            // => ['fr', 'en', undefined, undefined]</code></pre>
+
+            <aside class="notes" data-markdown>
+              Point important 1 : c'est une **expression** à gauche de `in` (comme dans `[]`). Doit renvoyer une String à la fin.
+
+              Point important 2 : distingo entre `expr in obj` et `obj.hasOwnProperty(expr)`.  Illustrer avec un diagramme tableau -> Array -> Object (genre `length` / 1, `slice`, `toString`).
+
+              Point important 3 : seul `delete` vire la propriété, la remettre à `null` ou même `undefined` n'enlève pas la clé.
+
+              translator.age = undefined => toujours là
+
+
+              if(window.localStorage == true) { console.log('bon navigateur') } else { console.log('incapable') }
+
+              if('localStorage' in window) { console.log('bon navigateur') } else { console.log('incapable') }
+
+              [].length ne bouge pas avec le delete
+
+              delete translator.langs.length => false, fo pas déconner non plus
+
+              Point important 4 : `delete` *change le contexte d'évaluation d'une expression* : au lieu de lire la valeur, il s'arrête à l'emplacement mémoire.
+
+            </aside>
+          </section>
+
+          <section id="has-own-property">
+            <h1>hasOwnProperty</h1>
+            <h4>Quand <code>in</code> ne suffit pas</h4>
+
+            <pre><code class="javascript" data-noescape>var translator = { name: 'Christophe', langs: ['fr', 'en'] };
+
+'name' in translator                     // => true
+0 in translator.langs                    // => true
+
+'toString' in translator                 // => true
+'join' in translator.langs               // => true
+
+translator<u>.hasOwnProperty</u>('toString')   // => false
+translator<u>.hasOwnProperty</u>('name')       // => true
+translator.langs<u>.hasOwnProperty</u>('join') // => false
+translator.langs<u>.hasOwnProperty</u>(0)      // => true</code></pre>
+
+            <p>Utilisez <code>hasOwnProperty</code> pour filtrer vos <code>for…in…</code> !</p>
+          </section>
+
+          <section id="truthy-falsy">
+            <h1>Truthy ou falsy?</h1>
+            <h4>Quand est-on dans le vrai&nbsp;?</h4>
+
+            <pre><code class="javascript" data-noescape>// 1. undefined, null, false, 0, '', NaN -> false
+// 2. N'importe quoi d'autre             -> true
+
+''  || '(empty)' // => '(empty)' -- pensez aux valeurs de champs de formulaire…
+
+function f(times) {
+  times = times || 3;
+  while (times--) console.log('yo');
+}
+<span class="fragment">f(4) // 4 fois 'yo' -- l’ataraxie me gagne.</span>
+<span class="fragment">f()  // 3 fois 'yo' -- j’en suis tout coi de contentement.</span>
+<span class="fragment">f(0) // 3 fois 'yo' -- ventre saint-gris, je suis fait, vertuchou !</span>
+<span class="fragment">
+function f(times) {
+  if (undefined === times) times = 3; // 0 est valide…
+  while (times--) console.log('yo');
+}
+
+// Ou pourquoi pas :
+if (!(+times > 0)) times = 3; // Tout NaN ou équivalent-nombre <= 0 est ignoré
+</span></code></pre>
+
+            <p><a href="http://www.js-attitude.fr/2012/09/10/truthy-ou-falsy-en-javascript//?utm_source=slides&amp;utm_medium=referrals&amp;utm_campaign=jstotal-slides" style="font-size: 50%;">L’article détaillé sur JS Attitude</a></p>
+
+            <aside class="notes" data-markdown>
+              expliquer le `||` c'est un IF ternaire
+
+              Évidemment pas utilisable pour des *falsy values* valides…
+
+              `undefined` est la valeur par défaut des arguments manquants
+
+              Insister sur le fait qu'au final, c'est vraiment le contrat / la spec de la fonction qui détermine quel test appliquer.  Si le temps le permet, exo oral collaboratif pour le cas "uniquement les trucs qui, convertis en nombre décimal, sont positifs", en essayant sur la fin de réduire l'expression au minimum (`!(+x &lt;= 0)`).
+            </aside>
+          </section>
+
+          <section id="parseint">
+            <h1>parseInt, ce farceur</h1>
+<!-- UPDATE ME -->
+            <pre><code class="javascript" data-noescape>var segs = '<span data-marker="parseint-current-formatted">16/12/2014</span>'.split('/');
+var d = parseInt(segs[0]), m = parseInt(segs[1]) - 1, y = parseInt(segs[2]);
+new Date(y, m, d).toDateString() // => '<span data-marker="parseint-current-output">Tue Dec 16 2014</span>'
+
+// En environnement non-ES5+ (IE pre-9, Node pre-0.10, etc.)
+segs = '16/09/2014'.split('/');
+d = parseInt(segs[0]), m = parseInt(segs[1]) - 1, y = parseInt(segs[2]);
+new Date(y, m, d).toDateString() // => 'Fri Dec 16 2013' -- MÉKÉKIDI !?
+<span class="fragment">
+parseInt('09')     // => 0 -- AAARGGGHHHH ! (avant ES5)
+parseInt('09', 10) // => 9 -- Ben !?
+</span>
+<span class="fragment">// parseInt(str[, radix]) !</span></code></pre>
+            <p><a href="http://www.js-attitude.fr/2012/12/26/convertir-un-nombre-en-texte-en-javascript/?utm_source=slides&amp;utm_medium=referrals&amp;utm_campaign=jstotal-slides" style="font-size: 50%;">L’article détaillé sur JS Attitude</a></p>
+
+            <aside class="notes" data-markdown>
+              parseInt(' 22/') => 22
+
+              parseInt('q22/') => NaN
+
+              * fail1 : ES5 : base 10 par défaut. Avant : il DEVINE la base (commence par 0 = octal, 0x = hexa). Le genre de bug qui se voit en août et septembre …
+              * fail2 : new Date essaye aussi d'accepter tout et n'importe quoi : -1 = décembre de l'année précédente bien sur
+              * fail3 : ce foutu - 1 sur le mois qui n'arrange rien
+
+              En gros, si on veut un truc blindé, faut d'abord une conversion `Number(x)` (ou `+x`), puis un arrondi dans le bon sens (`Math.ceil` ou `Math.floor`).  Quant à `parseFloat(x)`, sa version "correcte" est finalement `Number(x)`…
+            </aside>
+          </section>
+        </section>
+
+        <section id="constructors-and-prototypes">
+          <section class="chapter">
+            <h1>Constructeurs &amp; Prototypes</h1>
+          </section>
+
+          <section id="class-or-not">
+            <h1>Classe / Pas Classe</h1>
+
+            <ul>
+              <li>«&nbsp;Les classes, c’est bourgeois&nbsp;» — @Mitternacht</li>
+              <li>En JS on a que des objets</li>
+              <li>Objet = fatras de propriétés</li>
+              <li>Propriété = paire&nbsp;: nom + valeur</li>
+              <li>Si la valeur est une fonction, on dit «&nbsp;méthode&nbsp;»&nbsp;!</li>
+            </ul>
+            <aside class="notes" data-markdown>
+              * OOP inventé par Xerox (inventé aussi interfaces graphiques, corbeille, souris) et mis d’abord sur SmallTalk
+              * POO simple/classique : héritage simple / classe vs instance / statique vs instance
+              * en découle public / privé / protégé
+              * POO puissante : objets. pour faire un nouvel objet : clonage. D’où l’utilisation de prototypage pour l’héritage. Mixins
+              * 2 seules notions : instance et constructeur, mais qui englobe la POO simple. Fonctionnalités
+
+              Klass, prototype.create, super
+
+              À la base :
+              * JS ne devait surtout pas avoir les fonctionnalités de Java (extends et le bordel)
+              * de toute façon Brendan voulait le faire en prototypal
+            </aside>
+          </section>
+
+          <section id="constructors-intro">
+            <h1>Constructeurs</h1>
+
+            <ul>
+              <li>Fonctions servant à initialiser un nouvel objet. Le nom du constructeur est un peu comme « le nom de la classe »…</li>
+              <li>Toute fonction peut servir de constructeur : il suffit de l’appeler avec l’opérateur <code>new</code>.</li>
+              <li>Elle dispose alors d’une variable implicite <code>this</code>, qui représente la nouvelle « instance ».</li>
+              <li>L’objet créé référence son constructeur : <code>constructor</code>.</li>
+            </ul>
+          </section>
+
+          <section id="constructors-code">
+            <h1>Constructeurs</h1>
+
+            <pre><code class="javascript">function Person(first, last) {
+  this.first = first;
+  this.last = last;
+}
+
+var roiDeLaClasse = new Person('Georges', 'Abitbol');
+var superActeur = new Person('Clark', 'Gable');
+roiDeLaClasse.first // => 'Georges'
+superActeur.first   // => 'Clark'</code></pre>
+
+            <aside class="notes" data-markdown>
+            * Convention classique : un constructeur commence par une majuscule
+            * dans la console : plutôt que dire Object, ça dit le nom du constructeur
+            * typeof indique bien qu'on a un object
+
+            indices classiques : elle va initiliser sur this, elle ne renvoie rien car c'est implicite
+
+            </aside>
+          </section>
+
+          <section id="constructors-schema">
+            <h1>Constructeurs</h1>
+
+            <img src="assets/constructors.png">
+
+            <aside class="notes" data-markdown>
+              * propriété constructor : pointeur vers lui même (non énumérable, pas ownProperty)
+              * instanceof permet de tester si un objet a été créé par une méthode
+            </aside>
+
+
+          </section>
+
+          <section id="constructors-shield">
+            <h1>Constructeurs</h1>
+            <h4>Blindage</h4>
+
+            <pre><code class="javascript" data-noescape>var boulet = Person('Vincent', 'Lagaf'); <span class="fragment">// => undefined</span>
+<span class="fragment">first; // => 'Vincent'</span>
+<span class="fragment">last;  // => 'Lagaf'</span>
+
+<span class="fragment">// Solution :
+function Person(first, last) {
+  if (!(this instanceof Person))
+    throw new Error('Et le new eh patate !');
+  // …
+}</span></code></pre>
+            <aside class="notes" data-markdown>
+              * si pas new : silent FAIL, le this représente global (window)
+              * check avec instanceof, et throw new Error ou return new si t’es gentil …
+
+              <pre>function Person(first, last) {
+                if (!(this instanceof Person))
+                  return new Person(first, last);
+                this.first = first;
+                this.last = last;
+              }</pre>
+
+              ou arguments.callee (gaffe au mode strict)
+
+            </aside>
+          </section>
+
+          <section id="prototypes-intro">
+            <h1>Prototypes</h1>
+
+            <ul>
+              <li>Tout constructeur a un <strong>prototype</strong> : un objet qui définit les propriétés (et donc méthodes) partagées par tous les objets que produit ce constructeur.</li>
+              <li>Le prototype est « vivant » : si on le triture après l’appel au constructeur, ça marche quand même !</li>
+              <li>Techniquement, y’a plein d’autres trucs dans un prototype (réf. au constructeur, gestion de propriétés…). Mais bon.</li>
+            </ul>
+
+            <aside class="notes" data-markdown>
+              * démo function foo.prototype
+              * démo Person.prototype
+              * démo roiDeLaClasse.constructor.prototype infini
+              * roiDeLaClasse.__proto__ le raccourci magique (> IE 8)
+
+            </aside>
+          </section>
+
+          <section id="prototypes-code">
+            <h1>Prototypes</h1>
+
+            <pre><code class="javascript">// On augmente l'existant…
+Person.prototype.fullName = function fullName() {
+  return this.first + ' ' + this.last;
+};
+Person.prototype.greet = function greet() {
+  alert('Salut je m’appelle ' + this.first);
+};
+
+var luke = new Person('Mark', 'Hamill');
+luke.fullName(); // => 'Mark Hamill'
+
+// Rétroactif car lookup dynamique !
+roiDeLaClasse.greet(); // 'Salut je m’appelle Georges'</code></pre>
+          </section>
+
+          <section id="prototypes-code2">
+            <h1>Prototypes</h1>
+
+            <pre><code class="javascript">function extend(target, source) {
+  for (var prop in source)
+    target[prop] = source[prop];
+  return target;
+}
+
+extend(Person.prototype, {
+  fullName: function fullName() {
+    return this.first + ' ' + this.last;
+  },
+
+  greet: function greet() {
+    alert('Salut je m’appelle ' + this.first);
+  }
+});
+
+var john = new Person('John', 'Smith');
+john.fullName() // => 'John Smith'
+john.greet()    // 'Salut je m’appelle John'</code></pre>
+
+
+            <aside class="notes" data-markdown>
+              * allègement syntaxique : extend pour rajouter au prototype d’un constructeur
+              * faire remarquer : in, [], this
+            </aside>
+          </section>
+
+          <section id="prototypes-schema">
+            <h1>Prototypes</h1>
+
+            <img src="assets/prototypes.png">
+
+          <aside class="notes" data-markdown>
+            À ce stade, faire le schéma roiDeLaClasse -> Person -> Object, et jouer à surcharger puis virer `toString` sur les 2 niveaux les plus bas, montrer le résultat, le côté singleton sur `roiDeLaClasse` (n'impactera pas `superActeur`), etc.  Pour bien faire entrer le truc.  Insister sur le lookup *au moment de l'appel*, qu'on soit en indexation directe ou indirecte.
+
+            * roiDeLaClasse.toString() : d'où vient toString() ?
+            * roiDeLaClasse.__proto__.__proto__ => de Person, qui est un objet Function, qui hérite de Object, ou dir( roiDeLaClasse )
+            * Démo ajout toString() au proto
+            * Person.prototype.toString = function() { return 'Mon nom est Person'; }
+            * roiDeLaClasse.toString = function() { return 'je suis le roi'}
+            * roiDeLaClasse.hasOwnProperty('toString'); // true
+            * delete roiDeLaClasse.toString //
+            * roiDeLaClasse.hasOwnProperty('toString'); // false
+            * 'toString' in roiDeLaClasse
+
+          </aside>
+          </section>
+
+          <section id="prototypes-lookup-text">
+            <h1>Prototypes</h1>
+            <h4>Chaîne de lookup à l’indexation</h4>
+
+            <p>Pour toute indexation, directe (<code>.…</code>) ou indirecte (<code>[…]</code>), JS évalue l'expression en parcourant la chaîne des prototypes :</p>
+
+            <ol>
+              <li>Si c'est sur l'objet courant (<em>own property</em>), on prend</li>
+              <li>Sinon, on remonte d'un cran, sur le prototype du constructeur (raccourci : <code>__proto__</code>)</li>
+              <li>On recommence jusqu'à trouver ou avoir échoué sur <code>Object.prototype</code></li>
+            </ol>
+          </section>
+
+          <section id="prototypes-lookup-diagram">
+            <h1>Prototypes</h1>
+            <h4>Chaîne de lookup à l’indexation</h4>
+
+            <img src="assets/member-lookup.png">
+          </section>
+
+          <section id="prototypes-even-more-code">
+            <h1>Prototypes</h1>
+
+            <pre><code class="javascript" data-noescape>// Et bien sûr, ça marche sur les types natifs !
+
+Array.prototype.sum = function sum() {
+  var result = this[0];
+  for (var index = 1, len = this.length; index < len; ++index)
+    result += this[index];
+  return result;
+};
+[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].sum() // => 55
+<span class="fragment">
+Number.prototype.minutes = function minutes() {
+  return this * 60 * 1000;
+};</span>
+<span class="fragment">Number.prototype.ago = function ago() {
+  return new Date(Date.now() - this);
+};</span>
+<span class="fragment">new Date()          // => <span data-marker="ago-ref">Tue Dec 16 2014 14:12:17 GMT+0100 (CET)</span>
+(5).minutes().ago() // => <span data-marker="ago-result">Tue Dec 16 2014 14:07:17 GMT+0100 (CET)</span></span></code></pre>
+
+            <aside class="notes" data-markdown>
+              * [] instanceof Array => true . Cool, modifions le proto
+              * Évidemment, dans un cas pareil, l'extension de prototypes natifs est plutôt cool : peu de risque de conflits, gros boost d'expressivité.
+              * Attention quand même parce qu'un prototype natif, c'est un NS global, donc les risques de conflits avec d'autres libs sur la page existent.  Rester prudent, donc.  Ou passer par des NS/wrappers, un peu comme [Underscore](http://underscorejs.org/#chaining)…
+
+              Si le TEMPS : pause QUIZZ
+            </aside>
+          </section>
+        </section>
+
+        <section id="functional">
+          <section class="chapter">
+            <h1>Functional Programming</h1>
+            <aside class="notes" data-markdown>
+              * Fonctions de premier ordre
+              * Fonctions d'ordre supérieur
+            </aside>
+          </section>
+
+          <section id="fx-vocab">
+            <h1>Vocabulaire</h1>
+
+            <ul>
+              <li>
+                <strong>Fonctions de premier ordre</strong>
+                <ul>
+                  <li>Les fonctions sont des valeurs comme les autres</li>
+                  <li>Ce sont même des <strong>objets</strong> (instances de <code>Function</code>). Donc elles ont des méthodes (?!), des propriétés…</li>
+                </ul>
+              </li>
+              <li class="fragment">
+                <strong>Fonctions d’ordre supérieur</strong>
+                <ul>
+                  <li>Une fonction peut prendre des fonctions en entrée (arguments) et en sortie (valeur de retour).</li>
+                </ul>
+              </li>
+            </ul>
+
+          <aside class="notes" data-markdown>
+            1er ordre :
+
+            * on peut les mettre en tableau (ex: pile de callbacks), en variables
+            * référencer sans exécuter
+            * $.ajax('/', {complete:foo})
+
+
+            En prog fx pure, on n'aurait pas d'effets de bords…  Mais évidemment, pas top.  Ceci dit, dès qu'on a des fx d'ordre supérieur, on peut composer les fonctions, les enrober, etc.  et ça ouvre la voie à beaucoup d'approches fonctionnelles valables.
+
+            ex du throttling : pas de mélange du code fonctionnel et du code qui gère le temps
+          </aside>
+          </section>
+
+          <section id="fx-decl-vs-expr">
+            <h1>Bien déclarer</h1>
+            <h4>Déclaration ou expression&nbsp;?</h4>
+
+            <pre><code class="javascript">// SAYBOF™: Function Expression (fonction anonyme en fait)
+var fx = function(a, b) { return a * b; };
+
+// SAYMIEU™: Function Declaration
+function fx(a, b) { return a * b; }
+
+// Même si vous l'affectez par ailleurs…
+var fx = function localFx(a, b) { return a * b; };
+
+var obj = { fx: function fx(a, b) { return a * b; } };
+
+// -> Named Function Expression (NFE)
+// -> Micro-bugs dans JScript, Safari 2.x…  Pas gênants en pratique.
+// -> Le nom de la NFE n'est accessible que dans la fonction (récursion sans
+//    recourir à des quasi-hacks) et facilite le débogage.</code></pre>
+
+            <aside class="notes" data-markdown>
+              Comparer le bloc de fonction à droite du `fx:` en bas et celui sous le `// SAYMIEU` : ils sont strictement identiques.  Demander pourquoi le 1er est une decl et le second une expr.  Évidemment, question de grammaire JS et donc de contexte, de position dans le code.  Le parser attend une instruction (test de Litmus : « je peux mettre un for ») ou une expression ?
+
+              Ça prépare pour le slide suivant, qui illustre la différence comportementale avec le *hoisting* (ce slide-ci permet de préciser la capacité d'anonymité et le côté strictement local du nom intrinsèque d'une FE).
+            </aside>
+          </section>
+
+          <section id="fx-decl-vs-expr-2">
+            <h1>Bien déclarer</h1>
+            <h4>Hoisting des déclarations</h4>
+
+            <pre><code class="javascript" data-noescape>var x = 42;
+
+function x() { console.log('youpi'); }
+
+x() <span class="fragment">// => TypeError: number is not a function</span></code></pre>
+
+            <pre class="fragment"><code class="javascript" data-noescape>// 1: Hoisting des déclarations de fonctions
+function x() { console.log('youpi'); }
+<span class="fragment">
+// 2: Hoisting des déclarations de variables
+var x;</span>
+<span class="fragment">
+// 3: Déroulé des lignes de code
+x = 42;
+
+x();</span> <span class="fragment">// => ah bah oui, blam, forcément !</span></code></pre>
+
+            <aside class="notes" data-markdown>
+              À quoi sert le hoisting ?
+              * démo exécuton de la fonction avant sa déclaration.
+              y();
+              function y() { console.log('youpi'); }
+              * démo du piège :
+              if( 'addEventListener' in window )
+                function on() { console.log('monde W3C') }
+              else
+                function on() { console.log('tu as un IE &lt; 9')}
+
+            </aside>
+          </section>
+
+          <section id="decls-vs-exprs-2">
+            <h1>Fonctions</h1>
+            <h4>Déclarations vs. expressions</h4>
+
+            <pre><code class="javascript" data-noescape>var x = 42;
+
+x = function() { console.log('youpi'); }
+
+x(); <span class="fragment">// => ça marche</span></code></pre>
+          </section>
+
+          <section id="fx-scope">
+            <h1>Portée</h1>
+
+            <pre><code class="javascript">// 1. TU DÉCLARERAS TOUJOURS TES VARIABLES LOCALES AVEC "var"
+
+(function() { oops = 42; })();
+oops // => 42
+
+(function() { var shy = 42; })();
+shy // => ReferenceError
+
+// 2. LA PORTÉE D'UNE VARIABLE EST SA FONCTION ENGLOBANTE.
+
+function demo() {
+  for (var index = 0, len = 42; index < len; ++index) {
+    // …
+  }
+  console.log(index, len); // => 42, 42
+}
+demo();
+
+// ES6 : "let" au lieu de "var" pour une portée de niveau bloc</code></pre>
+
+            <aside class="notes" data-markdown>
+              Parler du mode strict => use-strict.html , puis de JSLint
+
+              Ceci dit `let` est à mon sens une Fausse Bonne Idée, parce qu'en termes de perfs c'est moins bon qu'un `var`, assez probablement.  Entre ça et la contrainte ES6+, je conseille de rester avec `var`.  En revanche, ne pas hésiter à en avoir plusieurs, et au plus près de leur utilisation : la runtime / le transpiler / Uglify optimiseront…
+
+              ES 6 const : de vraies constantes, avec portée de bloc
+            </aside>
+          </section>
+
+          <section id="fx-hiding">
+            <h1>Masquage</h1>
+            <h4><em>variable hiding</em></h4>
+
+            <pre><code class="javascript">var outer = 'JS Custom', x = 'outer';
+
+function fx() {
+  var x = 'inner';
+  console.log(outer, x);
+};
+fx(); // => JS Custom, inner
+
+x // => 'outer'</code></pre>
+
+            <p>(incidemment, CoffeeScript nous évite cet écueil)</p>
+          </section>
+
+          <section id="fx-closures">
+            <h1>Closures</h1>
+            <h4>Fermetures lexicales</h4>
+
+            <pre><code class="javascript">function publicFx() {
+  var stamp = Date.now();
+  return function() {
+    console.log(stamp);
+  };
+}
+
+stamp // ReferenceError
+
+var privilegedFx1 = publicFx();
+// Attendre un bref instant
+var privilegedFx2 = publicFx();
+
+// privilegedFx(1,2) sont en fait les fonctions internes construites au
+// sein de publicFx, qui grâce aux règles de portée "voient"
+// stamp.  Elles sont *closed over* par publicFx, ce qui fait
+// que les valeurs de stamp au moment où les fonctions ont été
+// renvoyéees sont préservées en RAM tant qu'une référence (ici
+// privilegedFx1/2) existe sur une fonction renvoyée.
+
+privilegedFx1(); // => affiche le stamp d'alors !
+privilegedFx2(); // => affiche le stamp d'après !
+</code></pre>
+
+            <aside class="notes" data-markdown>
+              Trois conditions pour avoir une fermeture lexicale :
+
+              1. Une fonction G est imbriquée dans une fonction F
+              2. La fonction G *utilise des éléments de la portée locale de F*
+              3. La fonction G *échappe à la portée de F* (soit par retour, soit par passage en callback… soit pas affectation globale, berk !)
+
+              Le rôle fondamental reste de persister un état privé à travers des invocations, ou dans l'attente d'une invocation…
+
+              tant que qlq peut utiliser la ref à la fonction, la closure ne dégage pas
+
+              Démo de l'onglet "Scope Variables" avec debugger dans privilegeFx
+
+            </aside>
+          </section>
+
+          <section id="fx-closures">
+            <h1>Closures</h1>
+            <h4>Fermetures lexicales</h4>
+
+            <pre><code class="javascript">var publicFx = (function() {
+  var callCount = 0;
+
+  function publicFx() {
+    var stamp = Date.now();
+    return function() {
+      console.log(++callCount, stamp);
+    };
+  }
+
+  return publicFx;
+})();
+
+var privilegedFx1 = publicFx();
+// Attendre un bref instant
+var privilegedFx2 = publicFx();
+
+privilegedFx1(); // => affiche 1 et le 1er stamp
+privilegedFx1(); // => affiche 2 et le 1er stamp
+privilegedFx2(); // => affiche 3 et le 2ème stamp
+// etc.
+</code></pre>
+
+            <aside class="notes" data-markdown>
+              On est là sur un schéma beaucoup plus fréquent en pratique, tout module JS et toute lib étant déjà dans sa closure global (*module pattern*) en plus des closures plus proches.  Lorsqu'on aura vu le slide des *module patterns*, on pourra montrer concrètement le source de jQuery, Underscore, etc. pour voir cette encapsulation.
+
+              explication de la closure multiple : IIFE + return function permet d’avoir une variable locale extérieure à la fonction, et donc de partager des variables locales entre plusieurs fonctions
+              genre l’incrément partagé entre tout le monde
+              démo pas à pas pour comprendre le partage d’incrément
+              utilisé pour persistance d’état
+            </aside>
+          </section>
+
+          <section id="fx-closure-fail">
+            <h1>Souci de closure…</h1>
+
+            <pre><code class="language-javascript">for (var index = 0; index < 10; ++index) {
+  setTimeout(function() { console.log(index); }, 0);
+} // => 10 x "10" :-(</code></pre>
+            <div class="fragment">
+            <h3>Solution&nbsp;:</h3>
+
+            <pre><code class="javascript">for (var index = 0; index < 10; ++index) {
+  (function(index) {
+    setTimeout(function() { console.log(index); }, 0);
+  })(index);
+} // => 0 -> 9 :-D</code></pre>
+            </div>
+
+            <div class="fragment">
+            <h3>Facile en ES6&nbsp;:</h3>
+
+            <pre><code class="javascript" data-noescape>for (<u>let</u> index = 0; index < 10; ++index) {
+  setTimeout(function() { console.log(index); }, 0);
+} // => 0 -> 9 :-D</code></pre>
+            </div>
+
+            <aside class="notes" data-markdown>
+              Ici en profiter pour re-détailler pourquoi ça déconne, en parlant du cycle d'exécution du navigateur ([bonne pres d'Anthony Ricaud à PW 2011](http://www.dailymotion.com/video/xp69td_un-navigateur-comment-ca-marche_news)) :
+
+              * JS est single-threaded, donc non-réentrant
+              * Le navigateur ne prend normalement pas la main tant que la passe JS n'a pas fini
+              * Après quoi seulement il désérialise le DOM, regarde les I/O (ex. Ajax) et événements (ex. souris, clavier), puis les timers.  Même un `setTimeout(…, 0)` empile le timer, qui ne sera dépilé que le moment venu.
+
+              Déroulé de la solution : d'abord une decl interne + appel, en montrant pourquoi un `var index = index` local ne peut pas marcher, par exemple (avant de passer par un paramètre).  Puis transformer un IIFE pour ne pas polluer la portée et compacter le corps de boucle.
+
+              Solution alternative, avec création de fonction :
+
+              for (var index = 0; index < 10; ++index) {
+                  setTimeout(
+                      (function(index) {
+                          return function realOne() {
+                              console.log(index);
+                          };
+                    })(index), 0);
+              }
+
+            </aside>
+          </section>
+
+          <section id="fx-varargs">
+            <h1>varargs</h1>
+            <h4>Arguments dynamiques</h4>
+
+            <pre><code class="javascript">// Les paramètres servent juste à nommer des arguments par position.
+// Aucune contrainte quant à l'appel réel.
+function showArgs(a, b, c) { console.log(a, b, c); }
+showArgs();               // => undefined, undefined, undefined
+showArgs(1);              // => 1, undefined, undefined
+showArgs(1, 2, 3, 4, 5);  // => 1, 2, 3
+
+// Toute fonction a une "variable locale" nommée arguments, qui
+// est un "tableau générique" (tu te souviens ?).
+function showArgs() {
+  for (var index = 0, len = arguments.length; index < len; ++index) {
+    console.log(index, " -> ", arguments[index]);
+  }
+}
+showArgs() // => Rien
+showArgs('foo', 42, false) // => 0 -> foo // 1 -> 42 // 2 -> false</code></pre>
+
+            <aside class="notes" data-markdown>
+              La phrase choc™ : *les paramètres ne contraignent pas les arguments*, en intro.  Voir si quelq'un peut expliquer le distingo entre les deux.
+
+              Attention, avant ES6, `arguments` n'est hélas pas un `Array` mais un `Arguments`, ce qui nécessite parfois quelques bidouilles de conversion.
+
+              showArgs.length pour le nombre d'argument déclarés par une fonction
+
+              mauvais exemple de la fonction initMouseEvent du W3C, qui pourrait avoir des arguments par défaut.
+
+              Montrer hash d'options + design d'API et exemple de code sur le Point 7 des 10 bonnes pratiques comme le $.ajax
+            </aside>
+          </section>
+
+          <section id="fx-module-pattern">
+            <h1>Module Pattern</h1>
+
+            <pre><code class="javascript">var publicAPI = (function() {
+  // Ton code qui va bien ici
+
+  // Privé pour de vrai !
+  var myPrivateStuff;
+
+  function insiderCode() {
+    // J'ai accès aux trucs privés : fermeture lexicale !
+  }
+
+  // On publie en polluant le global…
+  oops = 'ah merde !';
+
+  // …voire explicitement…
+  window.oops = 'j’assume';
+
+  // …ou en retournant un truc récupéré par l'appelant
+  return { myPublicMethod: insiderCode };
+})();</code></pre>
+            <p><a href="http://www.adequatelygood.com/2010/3/JavaScript-Module-Pattern-In-Depth" style="font-size: 50%;"><tt>http://www.adequatelygood.com/2010/3/JavaScript-Module-Pattern-In-Depth</tt></a></p>
+
+            <aside class="notes" data-markdown>
+              But : API claire + variables privées
+
+              expliquer le terme de Immediately Invoked Function Expression (IIFE)
+
+              Inutile de rentrer dans les multiples variations, juste indiquer que c'est là le « service minimum » pour tout fichier JS *source* (même avant concaténation), comme c'est d'ailleurs le cas avec CommonJS ou en CoffeeScript…  Et rappeler que côté front de nombreux fichiers n'ont pas besoin d'exposer quoi que ce soit : ils sont autonomes et attendent juste le DOM Ready…
+
+              En cas d'interdépendances événementielles, passer par des événements custom déclenchés sur `document` est souvent plus robuste que d'exposer des APIs publiques spécifiques.
+            </aside>
+          </section>
+
+          <section id="fx-binding-fail">
+            <h1>Le piège du binding</h1>
+
+            <pre><code class="javascript">var name = 'X';
+
+var obj = {
+  name: 'Robert',
+  greet: function greet(whom) {
+    console.log(this.name + ' salue ' + whom);
+  },
+  greetAll: function greetAll(first, second, last) {
+    [first, second, last].forEach(this.greet);
+  }
+};
+
+obj.greet("l’atelier JS Total !");
+// => 'Robert salue l’atelier JS Total !'
+
+var fx = obj.greet;
+fx("l’atelier") // => 'X salue l’atelier'
+
+obj.greetAll('Mark', 'Suzy'); // => 'X salue Mark', 'X salue Suzy'
+
+// http://www.alistapart.com/articles/getoutbindingsituations/</code></pre>
+
+            <aside class="notes" data-markdown>
+              Encore une fois, **un seul cas de figure où le binding implicite est utilisé** : `sujet.verbe(…)` (ou `sujet\['verbe'](…)`).  Tout référencement sans appel à la volée perd le contexte, car les méthodes ne sont pas intrinsèquement associées à un conteneur.
+
+              À défaut, `this` sera soit l'objet global (`window`, ou `global` en Node), soit `undefined` (ES5+ Strict Mode), soit le nœud DOM sur lequel l'écouteur a été enregistré (si gestionnaire d'événement DOM).
+
+              la plupart des librairies permettent de modifier le contexte d’exécution, en paramètre supplémentaire (mootool, jQuery, …) mais pas le DOM ou setTimeout
+
+              variante externe du fix : var fx = function( name ) { obj.greet( name ) };
+              mais on laisse la responsabilité du contexte à celui qui exécute notre code.
+
+              Au fait, ça n'est pas un bug, c'est pour faire de la composition : var objY = { name: 'YYYY' };
+
+              objY.greet = obj.greet;
+
+              document.onclick = obj.greet;
+
+              document.addEventListener('click', obj.greet);
+
+            </aside>
+          </section>
+
+          <section id="fx-binding-closure">
+            <h1>Donc on fait comment&nbsp;?</h1>
+
+            <pre><code class="javascript" data-noescape>// 1ère approche, légère, sympa : tirer parti de
+// la fermeture lexicale (si on peut)
+
+var obj = {
+  // …
+  greetAll: function greetAll(first, second, last) {
+    var <u>that = this</u>;
+    [first, second, last].forEach(function(name) {
+      <u>that</u>.greet(name);
+    });
+  }
+}</code></pre>
+
+            <aside class="notes" data-markdown>
+              C'est la solution la plus élégante quand l'appel ne permet pas de préciser le binding (ce qui n'est pas le cas ici, cf. slide suivant) mais que polluer la portée ne gêne pas.  On s'en servira beaucoup jeudi.  Indispensable notamment quand on doit préserver le `this` actif dans un **callback anonyme** plutôt que dans une méthode passée en callback.
+
+              On n'a fixé que l'appel à obj.greetAll('Marc', 'Sophie', 'les autres');
+
+            </aside>
+          </section>
+
+          <section id="fx-binding-closure-es5">
+            <h1>Donc on fait comment&nbsp;?</h1>
+            <h4>Incidemment, en ES5/jQuery/Prototype…</h4>
+
+            <pre><code class="javascript" data-noescape>var obj = {
+  // …
+  greetAll: function greetAll(first, second, last) {
+    [first, second, last].forEach(this.greet<u>, this</u>);
+  }
+}</code></pre>
+
+            <aside class="notes" data-markdown>
+              Évidemment quand on peut, ça c'est plus classe.  Possible pour tous les itérateurs ES5, jQuery, Underscore, Prototype, etc.  Mais pas pour `setTimeout` et consorts, par exemple…
+            </aside>
+          </section>
+
+          <section id="fx-apply-call">
+            <h1>apply &amp; call</h1>
+
+            <pre><code class="javascript" data-noescape>// fx.call(ctx[, arg1[, arg2…]])
+
+var fx = obj.greet;
+fx.call(obj, 'l’atelier') // => 'Robert salue l’atelier'
+
+var x = { 0: 'Zero', 1: 'One', length: 2 };
+Array.prototype.join.<u>call</u>(x, '-') // 'Zero-One'
+
+// fx.apply(ctx[, argArray]) -- Gros potentiel d’astuces !
+
+fx.apply(obj, ['l’atelier']) // => 'Robert salue l’atelier'
+Array.prototype.push.<u>apply</u>(x, ['Two', 'Three', 'Four']) // => 5
+x // => { 0: 'Zero', 1: 'One', 2: 'Two', 3: 'Three', 4: 'Four', length: 5 }</code></pre>
+
+            <aside class="notes" data-markdown>
+              Insister sur le fait que les deux *rendent le même service*, c'est juste une question d'appel : `call` si on sait exactement quels arguments on a, `apply` si on est plus génériques.  Peut prendre un tableau *ou un `Arguments`*, ce qui est bien pratique pour les *forwarders*.
+
+              On a donc deux intérêts majeurs :
+
+              1. Exiger un `this` spécifique
+              2. Déstructurer un tableau d'arguments en arguments individuels (*spread*)
+
+              Si le temps le permet, faire une démo de « `concat` modifiant » avec `push` et `apply`, et/ou montrer les transpilings *spread* et *rest* de `...` en CoffeeScript dans la démo interactive de son site.
+
+
+              concat modifiant : Array.prototype.push
+              push() prenant plusieurs arguments, on peut utiliser .apply pour lui donner.
+            </aside>
+          </section>
+
+          <section id="fx-bound">
+            <h1>Garantir le binding</h1>
+
+            <pre><code class="javascript">Function.prototype.bind = function bind(context) {
+  var f = this;
+  return function() {
+    return f.apply(context, arguments);
+  };
+};
+
+var fx = obj.greet.bind(obj);
+fx("l’atelier") // => 'Robert salue l’atelier'</code></pre>
+          </section>
+
+          <section id="fx-bound-details">
+            <h1>Garantir le binding</h1>
+
+            <style>
+            .reveal .fragment-images { position: relative; }
+            .reveal .fragment-images > img { position: absolute; top: 0; left: 50%; margin-left: -50%; max-width: none; max-height: none; }
+            </style>
+            <div class="fragment-images" style="width: 820px; height: 711px; margin: 0 auto;">
+              <img src="assets/Function-Binding-0.png"/>
+              <img src="assets/Function-Binding-1.png" class="fragment"/>
+              <img src="assets/Function-Binding-2.png" class="fragment"/>
+              <img src="assets/Function-Binding-3.png" class="fragment"/>
+              <img src="assets/Function-Binding-4.png" class="fragment"/>
+            </div>
+
+            <aside class="notes" data-markdown>
+              Si on a du temps à ce moment-là, coller le *vrai* `bind` (avec application partielle possible) en exo est intéressant.  Préciser quand même que `arguments` ne peut pas exploiter `concat`, qu'il faut convertir les `arguments` en `Array`s, et que le bon code pour ça est `Array.prototype.slice.call(arguments)`.
+            </aside>
+          </section>
+
+          <section id="fx-strtofx-1">
+            <h1>String#toFx</h1>
+            <h4>Ruby Envy</h4>
+
+            <pre><code class="javascript" data-noescape>String.prototype.toFx = function toFx() {
+  var fxName = this;
+  return function(self) { return self[fxName](); };
+};
+
+// Avant :
+
+'hello'.replace(/[aeiou]+/g, function(vowels) {
+  return vowels.<u>toUpperCase()</u>;
+})
+
+// Après :
+'hello'.replace(/[aeiou]+/g, <u>'toUpperCase'.toFx()</u>)</code></pre>
+
+            <aside class="notes" data-markdown>
+              Pour ceux qui sont assez à l'aise en Ruby, une démo dans `irb` de la même idée peut cadrer l'objectif (genre `words = %w(hello world this is nice)` suivi de `words.map { |w| w.size }` et sa version courte `words.map &amp;:size`).
+
+              Objectif :
+
+              * ne mettre que les voyelles en majuscules
+              * le faire façon ruby, sans la fonction anonyme, juste en nommant la fonction
+
+              Explication :
+
+              * String.replace() prend également les fonctions de callback
+              * faire remarquer l'option /g sur l'expression régulière
+              * exécuter "Avant" avec un console pour montrer que oui ça marche
+              * ruby est plus joli => nommage de la fonction dans l'obje direct
+
+              dans toFx :
+
+              * this contient la chaîne, donc la fonction qu'on demande
+              * self contiendra en l'occurrence la voyelle
+              * [] => propriété, fxName => closure, () => exécution
+
+              Faire remarquer qu'on n'a pas à écrire une vraie fonction toUpperCase(). Ex avec
+              'HELLO'.replace(/[aeiou]+/gi, 'toLowerCase'.toFx())
+            </aside>
+          </section>
+
+          <section id="fx-strtofx-2">
+            <h1>String#toFx</h1>
+            <h4>Ruby Beat</h4>
+
+            <pre><code class="javascript" data-noescape>String.prototype.toFx = function toFx() {
+  var fxName = this, args = arguments;
+  return function(self) { return self[fxName].apply(self, args); };
+};
+
+// Avant :
+
+'hello world this is nice'.replace(/\w+/g, function(word) {
+  return word.<u>slice(1, -1)</u>;
+})
+
+// Après :
+'hello world this is nice'.replace(/\w+/g, <u>'slice'.toFx(1, -1)</u>)</code></pre>
+
+            <aside class="notes" data-markdown>
+              Un truc que ruby ne sait pas faire : verrouiller des arguments.
+
+              Comment supprimer la première et la dernière lettre de chaque mot ?
+
+              Notes :
+              * on a rajouté apply au lieu de l'appel direct de tout à l'heure
+            </aside>
+          </section>
+
+          <section id="fx-not-all-prototypes">
+            <h1>Pas sur prototype ?</h1>
+            <h4>Une question d’esthétique</h4>
+
+            <pre><code class="javascript">function strToFx(fxName) {
+  var args = Array.prototype.slice.call(arguments, 1);
+  return function(self) { return self[fxName].apply(self, args); };
+};
+
+'hello world this is nice'.replace(/\w+/g, strToFx('substring', 1, 3))</code></pre>
+
+            <aside class="notes" data-markdown>
+              Là aussi, on peut reparler de la double approche d'Underscore, qui accomode les syntaxes façon OOP en plus de l’impérative façon NS.
+            </aside>
+          </section>
+        </section>
+
+        <section id="inheritance">
+          <section class="chapter">
+            <h1>Héritage prototypal</h1>
+          </section>
+
+          <section id="inher-code-1">
+            <h1>Héritage prototypal</h1>
+
+            <pre><code class="javascript" data-noescape>function Person() { this.race = 'human'; }
+function Geek()   { this.language = 'js'; }
+
+// Héritage prototypal « académique »
+<b class="wrong">Geek.prototype = new Person();</b>
+
+<span class="fragment">
+// Beaucoup mieux ; l'option préférée par les frameworks
+function inherit(Child, Parent) {
+  var Inter = function() {};
+  Inter.prototype = Parent.prototype;
+  Child.prototype = new Inter();
+  Child.prototype.constructor = Child;
+}
+<b class="right">inherit(Geek, Person); </b></span></code></pre>
+
+            <aside class="notes" data-markdown>
+              Version académique :
+
+              * myGeek = new Geek()
+              * console.log( myGeek ) => Geek {language: "JS", race: "human"}
+              * on a exécuté le constructeur parent => potentiellement dangereux
+
+              Ce qu'on veut, c'est un prototype
+
+              Bien dérouler le schéma (qui sera au slide suivant) au tableau est critique ici, et il faut aussi bien insister sur l'ordre des opérations : par exemple, il est impératif que le constructeur synthétique soit connecté au bon prototype *avant* qu'on l'instancie.
+
+              Bien faire rentrer que le cœur de la difficulté, par rapport au code KO, c'est qu'on doit instancier un constructeur dont le prototype est celui du parent, *sans pour autant instancier le constructeur parent*, dont on ne connait rien.
+
+              Conséquences cool :
+
+              * myGeek instanceof Geek : true
+              * myGeek instanceof Person : true
+
+              * console.log( myGeek ) => Geek {language: "JS"} . Pourquoi race n'apparaît pas ? on a fait exprès d'éviter d'appeler le constructeur parent.
+
+              2 options :
+
+              * race est plutôt statique, on le rajoute sur le prototype de Person : Person.prototype.race = 'human'
+              * race est dynamique, on peut rappeler le constructeur parent (ou mieux, une méthode getter sur le prototype) : function Geek(first, last, language) { Person.call(this, first, last); this.language = language; }
+              * enfin on peut toujours accéder aux méthodes du parent : this.__super__ = Person.prototype;
+
+              Seul drawback en pre-ES5 : la propriété `constructor` devient énumérable, et polluera donc nos `for…in` (qui devraient de toutes façons être filtrés par `.hasOwnProperty`) et nos affichages Console DevTools.
+            </aside>
+          </section>
+
+          <section id="inher-ref-solution-schema">
+            <h1>Héritage prototypal</h1>
+
+            <p><img src="assets/heritage-prototypal.png"></p>
+            <aside class="notes" data-markdown>
+                * var Inter = function() {};
+                * Inter.prototype = Parent.prototype;
+                * Child.prototype = new Inter();
+                * Child.prototype.constructor = Child;
+            </aside>
+          </section>
+
+          <section id="inher-modern">
+            <h1>Héritage moderne</h1>
+
+            <p>En ES5</p>
+
+            <pre><code class="javascript" data-trim>
+Geek.prototype = Object.create(Person.prototype, {
+  constructor: { value: Geek }
+});
+            </code></pre>
+
+            <p>En ES6, CoffeeScript…</p>
+
+            <pre><code class="es6" data-trim>
+class Geek extends Person
+            </code></pre>
+          </section>
+
+          <section id="inher-extend-inherit">
+            <h1>Faux héritage</h1>
+
+            <pre><code class="javascript" data-noescape>// Ou alors on confond héritage et recopie…  Où est le piège ?
+function extend(target, source) {
+  for (var prop in source)
+    target[prop] = source[prop];
+  return target;
+}
+
+function inherit(Child, Parent) {
+  <b class="wrong">extend(Child.prototype, Parent.prototype);</b>
+}
+// …mais quels seraient les utilisations cool d'extend ?</code></pre>
+
+            <aside class="notes" data-markdown>
+              Façon Crockford. Ça a l'air pratique et rapide mais l'héritage est cassé :
+
+              * Person.prototype.toString = function() { return 'Paul'}; myGeek.toString() => cassé
+              * myGeek instanceof Person => false
+              * myGeek.__proto__.__proto__ => Object au lieu de Person
+
+function Person() { this.race = 'human'; }
+function Geek()   { this.language = 'js'; }
+
+            </aside>
+          </section>
+
+          <section id="inher-mixins">
+            <h1>Mixins</h1>
+
+            <pre><code class="javascript">var WebDevSkills = {
+  preferredMarkup:  'HTML5',
+  preferredStyling: 'CSS3',
+  attendParisWeb: function attendParisWeb() { /* … */ },
+  slicePSD: function slicePSD() { /* … */ }
+};
+extend(Geek.prototype, WebDevSkills);
+
+myGeek.slicePSD()      // => …
+myGeek.preferredMarkup // => 'HTML5'</code></pre>
+
+            <aside class="notes" data-markdown>
+              Pas un héritage (spécialisation), juste une copie des fonction (partage d'implémentation) :
+
+              * WebDevSkills.attendParisWeb = function() { console.log(' before 30 yo ') };
+              * myGeek.attendParisWeb() => toujours l'ancien
+
+              Comme les Traits en PHP, les modules de Ruby
+
+              On peut aussi citer l'exemple de `Enumerable` dans Prototype.js, qui attend juste des prototypes hôtes qu'ils implémentent `_each`, et fournit à partir de là une quarantaine de méthodes dont le code est ainsi centralisé, mais reporté dans les prototypes de `Hash`, `Array`, `ObjectRange` et d'autres…
+            </aside>
+          </section>
+
+          <section id="inher-links">
+            <h1>Comprendre autrement</h1>
+
+            <ul>
+              <li><a href="http://www.slideshare.net/Dmitry.Baranovskiy/demystifying-prototypes-6183470">Demistifying prototypes</a></li>
+              <li><a href="http://www.slideshare.net/stoyan/advanced-javascript-presentation">Advanced JavaScript</a></li>
+              <li><a href="http://www.slideshare.net/stoyan/javascript-patterns">Javascript Patterns</a></li>
+              <li><a href="http://dmitrysoshnikov.com/ecmascript/chapter-7-2-oop-ecmascript-implementation/">OOP: ECMAScript Implementation</a></li>
+              <li><a href="http://javascriptweblog.wordpress.com/2010/06/07/understanding-javascript-prototypes/">Understanding JavaScript Prototypes</a></li>
+            </ul>
+          </section>
+
+          <section id="inher-static-instance">
+            <h1>static / instance</h1>
+
+            <ul>
+              <li>Si c’est au niveau du <strong>constructeur</strong>, c’est un membre « statique » ou « de classe »</li>
+              <li>Si c’est au niveau du <strong>prototype</strong> du constructeur, c’est un membre « d’instance » (sensible à l’état de chaque objet)</li>
+            </ul>
+
+            <aside class="notes" data-markdown>
+              Le slide suivant met ça en lumière.
+            </aside>
+          </section>
+
+          <section id="static-private">
+            <h1>Privé statique</h1>
+
+            <pre><code class="javascript" data-noescape>var Person = (function() {
+  <b class="hl">var instanceCount = 0;</b>
+
+  function Person(first, last) {
+    this.first = first;
+    this.last = last;
+    <b class="hl">++instanceCount;</b>
+  }
+
+  Person.getInstanceCount = function getInstanceCount() {
+    <b class="hl">return instanceCount;</b>
+  }
+
+  return Person;
+})();</code></pre>
+
+            <aside class="notes" data-markdown>
+              On est dans la *best practice* pour définir une classe, même si au début y'a pas de privé statique.  Illustrer avec le code généré pour une classe toute bête avec constructeur simple en CoffeeScript.
+
+              * Person.getInstanceCount()
+              * var moi = new Person( 'JP', 'V')
+              * moi.getInstanceCount() => ben non c'est statique
+
+              rappel sur la fonction visible de l'extérieur qui voit des variables privées (closure)
+
+            </aside>
+          </section>
+
+          <section id="instance-private">
+            <h1>Privé d’instance</h1>
+
+            <pre><code class="javascript" data-noescape>var Person = (function() {
+  <b class="hl">var instancePrivs = {};</b>
+
+  function Person(first, last) {
+    // …
+    <b class="hl">this._key = Math.random();</b>
+  }
+
+  Person.prototype.privilegedFx = function privilegedFx() {
+    var secret = <b class="hl">getPriv(this, 'secret');</b>
+    // …
+  }
+
+  function getPriv(obj, key) { return (instancePrivs[obj._key] || {})[key]; }
+
+  function setPriv(obj, key, val) {
+    instancePrivs[obj._key] = instancePrivs[obj._key] || {};
+    return instancePrivs[obj._key][key] = val;
+  }
+
+  return Person;
+})();</code></pre>
+
+            <aside class="notes" data-markdown>
+Poser le problème : voir instance-private.js
+
+Les méthodes définies ailleurs que dans le constructeur n'accèdent pas aux variables privées : on n'a pas de privée d'instance
+
+              Insister sur le fait que ça n'empêchera pas quelqu'un qui connaît deux objets de faire que l'un passe pour l'autre (en réaffectant la clé), sauf si on a pris des précautions ES5 (descripteur 100% false sur la propriété).  Même les `Symbol`s de ES6 ne nous aident pas tellement sur ce coup.
+
+              var mec = new Person('mec', 'ton');
+
+              on n'a accès qu'à : mec.privilegedFx()
+
+              Mais rappeler que ça reste plus privé que les autres langages (Java, PHP, Ruby, etc.) qui permettent **tous** de circonvenir la qualité `private` plus ou moins facilement.
+            </aside>
+          </section>
+        </section>
+
+        <section id="edit-code">
+          <section class="chapter">
+            <h1>Pondre le code</h1>
+            <h4>Mon éditeur chéri…</h4>
+          </section>
+
+          <section id="jshint">
+            <h1>JSHint</h1>
+
+            <p>Plus flexible/souple/tolérant</p>
+            <p>A grandi au-delà de ce but originel pour faire de l'analyse statique de code (SCA) et fournir des recos de plus haut niveau aussi (complexité cyclomatique, etc.</p>
+            <p><a href="http://www.jshint.com">jshint.com</a></p>
+
+            <aside class="notes" data-markdown>
+              Ce qu'on utilise en pratique.  Linting + infos de complexité.  Le projet `spa-basis` inclut un `.jshintrc` très détaillé et commenté, leur refiler expliquer qu'il est pris en compte par JSHint pour tout fichier au même niveau ou dessous ; ils peuvent donc se le coller dans leur `HOME` en virant peut-être juste certains trucs comme quelques `globals` et l'environnement Node, par exemple.
+
+              * récupérer et éditer jshint-example.js
+              * récupérer .jshintrc, le dérouler
+              *
+
+              Leur faire installer SublimeLinter (surtout pas le JSLint / JSHint de base) dans ST et leur montrer quelques impacts (attention, il faut que le fichier soit sauvé).  Bien insister sur le côté débogage préemptif et donc gros gain de temps, notamment pour les fautes de frappe.
+            </aside>
+          </section>
+
+          <section id="beautifiers">
+            <h1>Beautifiers</h1>
+
+            <p><a href="http://jsbeautifier.org/">JSBeautifier.org</a> et ses plugins (ex. pour <a href="https://github.com/jdc0589/JsFormat">Sublime Text 2</a>)</p>
+            <p><a href="https://github.com/mishoo/UglifyJS2">UglifyJS</a> (Node) fait <i>aussi</i> du <i>beautifying</i>…</p>
+            <p>Vous avez peut-être des fonctions inhérentes dans vos éditeurs ou EDI, etc.</p>
+            <p>Pratique comme filtres automatiques dans un VCS…</p>
+
+            <aside class="notes" data-markdown>
+              * Eclipse, WebStorm/PHPStorm et VS ont des réglages ultra-pointus,
+              * sur ST le paquet JSFormat est à récupérer (surtout pour mater du JSON), et les DevTools en ont un aussi.
+              * Si besoin d'un truc ultra-chiadé sur ST par exemple, voir [Uncrustify](http://uncrustify.sourceforge.net/) et son wrapper de config OSX [UncrustifyX](https://github.com/ryanmaxwell/UncrustifyX), qui envoient grave du paté !
+            </aside>
+          </section>
+        </section>
+
+        <section id="next-day">
+          <h1>À suivre…</h1>
+
+          <h3>Plein de trucs cool</h3>
+
+          <h3>Outillage, méthodologie et écosystème</h3>
+
+          <ul>
+            <li>Éditeurs, JSHint/Lint, beautifiers, préprocesseurs…</li>
+            <li>Débogueurs, consoles et panneaux avancés</li>
+            <li>Déterminer les API exploitables&nbsp;; Modernizr, shims, etc.</li>
+            <li>Organisation en modules&nbsp;; packaging, chargement</li>
+            <li>Frameworks MVC</li>
+            <li>Brunch.io</li>
+            <li>Début de la SPA</li>
+          </ul>
+
+          <h3>À <span data-marker="next-day-name">demain</span>&nbsp;!</h3>
+        </section>
+      </div>
+
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.min.js"></script>
+
+    <script>
+      // Full list of configuration options available here:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+
+        theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+        transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+        // Parallax scrolling
+        // parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+        // parallaxBackgroundSize: '2100px 900px',
+
+        // Optional libraries used to extend on reveal.js
+        dependencies: [
+          { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+        ]
+      });
+    </script>
+  </body>
+</html>

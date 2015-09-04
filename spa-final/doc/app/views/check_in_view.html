@@ -1,0 +1,89 @@
+<!DOCTYPE html><html lang="en"><head><title>app/views/check_in_view</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content="../../"><meta name="groc-document-path" content="app/views/check_in_view"><meta name="groc-project-path" content="app/views/check_in_view.js"><link rel="stylesheet" type="text/css" media="all" href="../../assets/style.css"><script type="text/javascript" src="../../assets/behavior.js"></script><body><div id="meta"><div class="file-path">app/views/check_in_view.js</div></div><div id="document"><div class="segment"><div class="comments "><div class="wrapper"><h1 id="contrleur-zone-de-check-ins">Contrôleur zone de check-ins</h1></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="hljs-pi">
+'use strict'</span>;
+
+<span class="hljs-keyword">var</span> View = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./view'</span>);
+<span class="hljs-keyword">var</span> CheckInUX = <span class="hljs-built_in">require</span>(<span class="hljs-string">'models/check_in_ux'</span>);
+<span class="hljs-keyword">var</span> locSvc = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lib/location'</span>);
+<span class="hljs-keyword">var</span> poiSvc = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lib/places'</span>);
+<span class="hljs-keyword">var</span> store = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lib/persistence'</span>);
+<span class="hljs-keyword">var</span> userName = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lib/notifications'</span>).userName;
+<span class="hljs-keyword">var</span> _ = <span class="hljs-built_in">require</span>(<span class="hljs-string">'underscore'</span>);
+
+<span class="hljs-built_in">module</span>.exports = View.extend({
+  bindings: {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Binding simple du texte de commentaire</p></div></div><div class="code"><div class="wrapper">    <span class="hljs-string">'#comment'</span>: <span class="hljs-string">'comment'</span>,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Binding de rendering des POI</p></div></div><div class="code"><div class="wrapper">    <span class="hljs-string">'#places'</span>: {
+      observe: [<span class="hljs-string">'places'</span>, <span class="hljs-string">'placeId'</span>],
+      onGet: <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{ <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.getRenderData().placeList; },
+      updateMethod: <span class="hljs-string">'html'</span>
+    },</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Binding composite à formatage personnalisé pour la dernière géoloc connue</p></div></div><div class="code"><div class="wrapper">    <span class="hljs-string">'#geoloc'</span>: {
+      observe: [<span class="hljs-string">'lat'</span>, <span class="hljs-string">'lng'</span>],
+      onGet: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getGeolocText</span><span class="hljs-params">(pos)</span> </span>{
+        <span class="hljs-keyword">if</span> (_.isString(pos[<span class="hljs-number">0</span>]) || pos[<span class="hljs-number">0</span>] === <span class="hljs-number">0</span> &amp;&amp; pos[<span class="hljs-number">1</span>] === <span class="hljs-number">0</span>) {
+          <span class="hljs-keyword">return</span> <span class="hljs-string">'Je suis…'</span>;
+        }
+
+        <span class="hljs-keyword">return</span> pos[<span class="hljs-number">0</span>].toFixed(<span class="hljs-number">7</span>) + <span class="hljs-string">' / '</span> + pos[<span class="hljs-number">1</span>].toFixed(<span class="hljs-number">7</span>);
+      }
+    },</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Binding sur attribut <code>disabled</code> du bouton d&#39;envoi de check-in</p></div></div><div class="code"><div class="wrapper">    <span class="hljs-string">'button[type=submit]'</span>: {
+      attributes: [{
+        name: <span class="hljs-string">'disabled'</span>,
+        observe: <span class="hljs-string">'checkInForbidden'</span>
+      }]
+    },</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Binding sur attribut <code>disabled</code> du bouton de rafraîchissement de POI</p></div></div><div class="code"><div class="wrapper">    <span class="hljs-string">'header button'</span>: {
+      attributes: [{
+        name: <span class="hljs-string">'disabled'</span>,
+        observe: <span class="hljs-string">'fetchPlacesForbidden'</span>
+      }]
+    }
+  },</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Les événements UI auxquels on réagit</p></div></div><div class="code"><div class="wrapper">  events: {
+    <span class="hljs-string">'click header button'</span>: <span class="hljs-string">'fetchPlaces'</span>,
+    <span class="hljs-string">'click #places li'</span>: <span class="hljs-string">'selectPlace'</span>,
+    <span class="hljs-string">'submit'</span>: <span class="hljs-string">'checkIn'</span>
+  },</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Notre template de liste</p></div></div><div class="code"><div class="wrapper">  listTemplate: <span class="hljs-built_in">require</span>(<span class="hljs-string">'./templates/places'</span>),</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Les événements app-wide (pub/sub) auxquels on réagit</p></div></div><div class="code"><div class="wrapper">  subscriptions: {
+    <span class="hljs-string">'connectivity:online'</span>: <span class="hljs-string">'fetchPlaces'</span>
+  },</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Notre template principal</p></div></div><div class="code"><div class="wrapper">  template: <span class="hljs-built_in">require</span>(<span class="hljs-string">'./templates/check_in'</span>),
+
+  initialize: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">initializeCheckInView</span><span class="hljs-params">()</span> </span>{</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>&quot;super&quot;</p></div></div><div class="code"><div class="wrapper">    View.prototype.initialize.apply(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">arguments</span>);
+    <span class="hljs-keyword">this</span>.model = <span class="hljs-keyword">new</span> CheckInUX();
+  },
+
+  afterRender: <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
+    <span class="hljs-keyword">this</span>.fetchPlaces();
+  },</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Envoi d&#39;un check-in</p></div></div><div class="code"><div class="wrapper">  checkIn: <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(e)</span> </span>{
+    e.preventDefault();
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.model.get(<span class="hljs-string">'checkInForbidden'</span>))
+      <span class="hljs-keyword">return</span>;
+
+    <span class="hljs-keyword">var</span> place = <span class="hljs-keyword">this</span>.model.getPlace();</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>On soumet le check-in à la couche de persistence.  L&#39;événement app-wide
+qu&#39;elle déclenchera (checkins:new) activera l&#39;insertion dans l&#39;historique.</p></div></div><div class="code"><div class="wrapper">    store.addCheckIn({
+      userName: userName,
+      placeId: place.id,
+      name: place.name,
+      vicinity: place.vicinity,
+      icon: place.icon,
+      comment: <span class="hljs-keyword">this</span>.model.get(<span class="hljs-string">'comment'</span>)
+    });</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Remise &quot;à zéro&quot; de l&#39;UI de check-in</p></div></div><div class="code"><div class="wrapper">    <span class="hljs-keyword">this</span>.model.set({ placeId: <span class="hljs-literal">null</span>, comment: <span class="hljs-string">''</span> });
+  },</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Désactive l&#39;UI de check-in le temps de récupérer la géoloc actuelle
+et les POI associés.</p></div></div><div class="code"><div class="wrapper">  fetchPlaces: <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
+    <span class="hljs-keyword">this</span>.model.set(<span class="hljs-keyword">this</span>.model.defaults);
+    <span class="hljs-keyword">var</span> that = <span class="hljs-keyword">this</span>;</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>On récupère la géoloc…</p></div></div><div class="code"><div class="wrapper">    locSvc.getCurrentLocation(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(lat, lng)</span> </span>{
+      that.model.set({ lat: lat, lng: lng });
+      <span class="hljs-keyword">if</span> (_.isString(lat)) {
+        <span class="hljs-keyword">return</span>;
+      }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Et du coup, on choppe les POI</p></div></div><div class="code"><div class="wrapper">      poiSvc.lookupPlaces(lat, lng, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(places)</span> </span>{
+        that.model.set(<span class="hljs-string">'places'</span>, places);
+      });
+    });
+  },</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Convention définie par notre classe mère View pour render : on
+peuple le template principal avec ces données.
+Le searching est juste là pour afficher le spinner si pas de
+POI, afin de différencier avec le contexte de l&#39;historique, ou pas
+d&#39;éléments = juste du vide…</p></div></div><div class="code"><div class="wrapper">  getRenderData: <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
+    <span class="hljs-keyword">return</span> {
+      placeList: <span class="hljs-keyword">this</span>.renderTemplate(<span class="hljs-keyword">this</span>.model.pick(<span class="hljs-string">'places'</span>, <span class="hljs-string">'placeId'</span>), <span class="hljs-keyword">this</span>.listTemplate)
+    };
+  },</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Réagit au clic dans la liste des POI pour faire sélection et activer l&#39;UI
+de check-in.</p></div></div><div class="code"><div class="wrapper">  selectPlace: <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(e)</span> </span>{
+    <span class="hljs-keyword">var</span> placeId = <span class="hljs-keyword">this</span>.$(e.currentTarget).attr(<span class="hljs-string">'data-place-id'</span>);
+    <span class="hljs-keyword">this</span>.model.set(<span class="hljs-string">'placeId'</span>, placeId);
+  }
+});</div></div></div></div></body></html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html><html lang="en"><head><title>app/lib/places</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content="../../"><meta name="groc-document-path" content="app/lib/places"><meta name="groc-project-path" content="app/lib/places.js"><link rel="stylesheet" type="text/css" media="all" href="../../assets/style.css"><script type="text/javascript" src="../../assets/behavior.js"></script><body><div id="meta"><div class="file-path">app/lib/places.js</div></div><div id="document"><div class="segment"><div class="comments "><div class="wrapper"><h1 id="interface-poi">Interface POI</h1></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="hljs-pi">
+'use strict'</span>;</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Encapsulation de la bibliothèque Places au sein de la Google Maps v3 JS API.
+La formation ne s&#39;occupe pas des détails de ce module, qui est annexe au
+sujet.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">var</span> $ = <span class="hljs-built_in">require</span>(<span class="hljs-string">'jquery'</span>);
+<span class="hljs-keyword">var</span> _ = <span class="hljs-built_in">require</span>(<span class="hljs-string">'underscore'</span>);
+<span class="hljs-keyword">var</span> Backbone = <span class="hljs-built_in">require</span>(<span class="hljs-string">'backbone'</span>);
+<span class="hljs-keyword">var</span> Lawnchair = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lawnchair'</span>);
+<span class="hljs-keyword">var</span> cnxSvc = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lib/connectivity'</span>);</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>global google </p></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Clé API dédiée à l&#39;atelier.  Permet 1K req/jour, pensez à enregistrer
+votre propre appli et clé sur <a href="http://code.google.com/apis/console">http://code.google.com/apis/console</a></p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">var</span> JSGURUV3_API_KEY = <span class="hljs-string">'AIzaSyCoiEjsdXfD5roowpX5jN3cwImV1TgGzIs'</span>;</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>On s&#39;intéresse uniquement à certains types de POI.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">var</span> POI_TYPES = [<span class="hljs-string">'bakery'</span>, <span class="hljs-string">'bar'</span>, <span class="hljs-string">'cafe'</span>, <span class="hljs-string">'food'</span>, <span class="hljs-string">'meal_takeaway'</span>, <span class="hljs-string">'restaurant'</span>];</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>On filtre les résultats sur un certain rayon (en mètres) autour des géocoords
+initiales.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">var</span> RADIUS = <span class="hljs-number">500</span>;</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>On limite aussi le resultset à un certain nombre de POI, sinon ça devient
+vite le souk à scanner.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">var</span> MAX_PLACES = <span class="hljs-number">12</span>;</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>On fait attention à la connectivité pour éviter les appels en offline
+et rafraîchir automatiquement en cas d&#39;online à nouveau.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">var</span> placesService, distanceService;
+<span class="hljs-built_in">require</span>(<span class="hljs-string">'lawnchair-dom'</span>);
+<span class="hljs-keyword">var</span> localStore = <span class="hljs-keyword">new</span> Lawnchair({ name: <span class="hljs-string">'pois'</span> }, $.noop);</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Si cette API n&#39;est pas exploitable pour une raison quelconque
+(ex. on est offline), on peut travailler avec cette appli en
+plaçant cette variable <code>$FAKE</code> à <code>true</code>, ce qui renverra
+&quot;en dur&quot; des POI autour du siège de Delicious Insights ;-)</p></div></div><div class="code"><div class="wrapper"><span class="hljs-keyword">var</span> $FAKE = <span class="hljs-literal">false</span>;</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Fonction interne d&#39;initialisation de l&#39;API par chargement
+asynchrone de la lib depuis chez Google et exploitation d&#39;un
+callback.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">initializePlacesAPI</span><span class="hljs-params">()</span> </span>{
+  <span class="hljs-keyword">if</span> (placesService || !cnxSvc.isOnline()) <span class="hljs-keyword">return</span>;
+  <span class="hljs-keyword">var</span> script = <span class="hljs-built_in">document</span>.createElement(<span class="hljs-string">'script'</span>);
+  script.src = <span class="hljs-string">'http://maps.googleapis.com/maps/api/js?key='</span> + JSGURUV3_API_KEY +
+    <span class="hljs-string">'&amp;libraries=places&amp;sensor=true&amp;callback=makePlacesReady'</span>;
+
+  <span class="hljs-built_in">window</span>.makePlacesReady = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
+    <span class="hljs-keyword">delete</span> <span class="hljs-built_in">window</span>.makePlacesReady;
+    <span class="hljs-keyword">var</span> div = <span class="hljs-built_in">document</span>.createElement(<span class="hljs-string">'div'</span>);
+    placesService = <span class="hljs-keyword">new</span> google.maps.places.PlacesService(div);
+    distanceService = <span class="hljs-keyword">new</span> google.maps.DistanceMatrixService();
+  };
+
+  $(<span class="hljs-string">'script:first'</span>).after(script);
+}</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Recherche des POI pertinents près d&#39;une position donnée.  La position peut
+$etre donnée soit en deux arguments (latitude et longitue) soit en tant que
+<code>google.maps.LatLng</code>, donc un seul argument.  Dans les deux cas, l&#39;argument
+final <em>doit</em> être une fonction de rappel, qui sera appelée avec un tableau de
+hashes représentant les POI.
+Performance : durant les tests, c&#39;est assez rapide--pas plus d’1s.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">lookupPlaces</span><span class="hljs-params">(lat, lng, callback)</span> </span>{
+  <span class="hljs-keyword">var</span> dontLookup = !cnxSvc.isOnline() || $FAKE;
+  <span class="hljs-keyword">if</span> (!placesService &amp;&amp; !dontLookup) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Place search service isn’t ready yet! Deferring 1s…'</span>);
+    _.delay(lookupPlaces, <span class="hljs-number">1000</span>, lat, lng, callback);
+    <span class="hljs-keyword">return</span>;
+  }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>On joue offline ? Pas grave, on renvoie des trucs de test histoire de…</p></div></div><div class="code"><div class="wrapper">  <span class="hljs-keyword">if</span> (dontLookup) {
+    localStore.all(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(savedPOIs)</span> </span>{
+      <span class="hljs-keyword">if</span> (savedPOIs &amp;&amp; savedPOIs.length) {
+        callback(savedPOIs);
+        <span class="hljs-keyword">return</span>;
+      }
+
+      callback([
+        { id: <span class="hljs-string">'42'</span>, name: <span class="hljs-string">'Le Mont Liban'</span>, vicinity: <span class="hljs-string">'42 Boulevard Batignolles'</span>, distance: <span class="hljs-number">65</span>, duration: <span class="hljs-number">49</span>, key: <span class="hljs-built_in">Date</span>.now() - _.random(<span class="hljs-number">0</span>, <span class="hljs-number">60</span>) * <span class="hljs-number">60000</span> },
+        { id: <span class="hljs-string">'43'</span>, name: <span class="hljs-string">'La Raymondine'</span>, vicinity: <span class="hljs-string">'42 Boulevard Batignolles'</span>, distance: <span class="hljs-number">65</span>, duration: <span class="hljs-number">49</span>, key: <span class="hljs-built_in">Date</span>.now() - _.random(<span class="hljs-number">0</span>, <span class="hljs-number">60</span>) * <span class="hljs-number">60000</span> },
+        { id: <span class="hljs-string">'44'</span>, name: <span class="hljs-string">'Batignolles Express'</span>, vicinity: <span class="hljs-string">'32 Rue Batignolles'</span>, distance: <span class="hljs-number">80</span>, duration: <span class="hljs-number">60</span>, key: <span class="hljs-built_in">Date</span>.now() - _.random(<span class="hljs-number">0</span>, <span class="hljs-number">60</span>) * <span class="hljs-number">60000</span> },
+        { id: <span class="hljs-string">'45'</span>, name: <span class="hljs-string">'Les Batignolles'</span>, vicinity: <span class="hljs-string">'31 Boulevard Batignolles'</span>, distance: <span class="hljs-number">99</span>, duration: <span class="hljs-number">68</span>, key: <span class="hljs-built_in">Date</span>.now() - _.random(<span class="hljs-number">0</span>, <span class="hljs-number">60</span>) * <span class="hljs-number">60000</span> },
+        { id: <span class="hljs-string">'46'</span>, name: <span class="hljs-string">'AGD'</span>, vicinity: <span class="hljs-string">'36 Boulevard Batignolles'</span>, distance: <span class="hljs-number">99</span>, duration: <span class="hljs-number">68</span>, key: <span class="hljs-built_in">Date</span>.now() - _.random(<span class="hljs-number">0</span>, <span class="hljs-number">60</span>) * <span class="hljs-number">60000</span> },
+        { id: <span class="hljs-string">'47'</span>, name: <span class="hljs-string">'Le Paris Rome'</span>, vicinity: <span class="hljs-string">'60 Boulevard Batignolles'</span>, distance: <span class="hljs-number">103</span>, duration: <span class="hljs-number">88</span>, key: <span class="hljs-built_in">Date</span>.now() - _.random(<span class="hljs-number">0</span>, <span class="hljs-number">60</span>) * <span class="hljs-number">60000</span> },
+        { id: <span class="hljs-string">'48'</span>, name: <span class="hljs-string">'Picard Surgelés'</span>, vicinity: <span class="hljs-string">'37 Avenue Clichy'</span>, distance: <span class="hljs-number">108</span>, duration: <span class="hljs-number">92</span>, key: <span class="hljs-built_in">Date</span>.now() - _.random(<span class="hljs-number">0</span>, <span class="hljs-number">60</span>) * <span class="hljs-number">60000</span> },
+        { id: <span class="hljs-string">'49'</span>, name: <span class="hljs-string">'La Boutique de Camille'</span>, vicinity: <span class="hljs-string">'33 Boulevard Batignolles'</span>, distance: <span class="hljs-number">126</span>, duration: <span class="hljs-number">115</span>, key: <span class="hljs-built_in">Date</span>.now() - _.random(<span class="hljs-number">0</span>, <span class="hljs-number">60</span>) * <span class="hljs-number">60000</span> },
+        { id: <span class="hljs-string">'50'</span>, name: <span class="hljs-string">'Fédération de la Boucherie'</span>, vicinity: <span class="hljs-string">'23 Rue Clapeyron'</span>, distance: <span class="hljs-number">127</span>, duration: <span class="hljs-number">116</span>, key: <span class="hljs-built_in">Date</span>.now() - _.random(<span class="hljs-number">0</span>, <span class="hljs-number">60</span>) * <span class="hljs-number">60000</span> }
+      ]);
+    });
+    <span class="hljs-keyword">return</span>;
+  }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Traitements de la signature variable pour l&#39;appel à cette fonction.</p></div></div><div class="code"><div class="wrapper">  callback = <span class="hljs-built_in">arguments</span>[<span class="hljs-built_in">arguments</span>.length - <span class="hljs-number">1</span>];
+  <span class="hljs-keyword">if</span> (!_.isFunction(callback))
+    <span class="hljs-keyword">throw</span> <span class="hljs-string">'Missing or invalid callback'</span>;
+  <span class="hljs-keyword">var</span> latLng;
+  <span class="hljs-keyword">if</span> (lat <span class="hljs-keyword">instanceof</span> google.maps.LatLng)
+    latLng = lat;
+  <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (_.isUndefined(lng))
+    <span class="hljs-keyword">throw</span> <span class="hljs-string">'Invalid call: requires either a LatLng or a latitude plus a longitude'</span>;
+  <span class="hljs-keyword">else</span>
+    latLng = <span class="hljs-keyword">new</span> google.maps.LatLng(lat, lng);</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Lancement de la recherche</p></div></div><div class="code"><div class="wrapper">  placesService.search({
+    location: latLng,
+    rankBy:   google.maps.places.RankBy.DISTANCE,
+    types:    POI_TYPES
+  }, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(result, status)</span> </span>{
+    <span class="hljs-keyword">if</span> (google.maps.places.PlacesServiceStatus.OK !== status) {
+      callback([]);
+      <span class="hljs-keyword">return</span>;
+    }</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Bon, maintenant on chope la distance pour chaque point (car Google Places
+n&#39;a pas eu la bonne idée de le filer, tsk tsk).  Heureusement, l&#39;API concernée
+est super rapide (sans doute vu qu&#39;elle n&#39;a aucune I/O à faire côté Google).</p></div></div><div class="code"><div class="wrapper">    <span class="hljs-keyword">var</span> dests = $.map(result, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(p)</span> </span>{ <span class="hljs-keyword">return</span> p.geometry.location; });
+    distanceService.getDistanceMatrix({
+      origins: [latLng],
+      destinations: dests,
+      travelMode: google.maps.TravelMode.WALKING
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(distances)</span> </span>{
+      <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> index = <span class="hljs-number">0</span>, l = result.length; index &lt; l; ++index) {
+        <span class="hljs-keyword">var</span> item = result[index], dist = distances.rows[<span class="hljs-number">0</span>].elements[index];
+        result[index] = {
+          id:       item.id,
+          icon:     item.icon,
+          name:     item.name,
+          vicinity: item.vicinity,
+          distance: dist.distance.value,
+          duration: dist.duration.value
+        };
+      }
+      result = _.filter(result, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(r)</span> </span>{ <span class="hljs-keyword">return</span> r.distance &lt;= RADIUS; });
+      result = _.sortBy(result, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(r)</span> </span>{ <span class="hljs-keyword">return</span> r.distance; }).slice(<span class="hljs-number">0</span>, MAX_PLACES);
+      _.each(result, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(r)</span> </span>{ r.key = r.id; });
+      localStore.nuke(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
+        localStore.batch(result);
+      });
+      callback(result);
+    });
+  });
+}
+
+initializePlacesAPI();
+Backbone.Mediator.subscribe(<span class="hljs-string">'connectivity:online'</span>, initializePlacesAPI);
+
+<span class="hljs-built_in">module</span>.exports = {
+  lookupPlaces: lookupPlaces,
+  poiTypes: POI_TYPES
+};</div></div></div></div></body></html>

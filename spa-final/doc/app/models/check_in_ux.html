@@ -1,0 +1,35 @@
+<!DOCTYPE html><html lang="en"><head><title>app/models/check_in_ux</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content="../../"><meta name="groc-document-path" content="app/models/check_in_ux"><meta name="groc-project-path" content="app/models/check_in_ux.js"><link rel="stylesheet" type="text/css" media="all" href="../../assets/style.css"><script type="text/javascript" src="../../assets/behavior.js"></script><body><div id="meta"><div class="file-path">app/models/check_in_ux.js</div></div><div id="document"><div class="segment"><div class="comments "><div class="wrapper"><h1 id="modle-d39tat-de-vue--checkinux">Modèle d&#39;état de vue : CheckInUX</h1></div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Ce modèle représente l&#39;état de l&#39;UX pour la sous-vue de check-in,
+ce qui permet notamment de faire du data-binding et de fluidifier
+la gestion d&#39;état et sa logique applicative.</p></div></div><div class="code"><div class="wrapper"><span class="hljs-pi">
+'use strict'</span>;
+
+<span class="hljs-keyword">var</span> _ = <span class="hljs-built_in">require</span>(<span class="hljs-string">'underscore'</span>);
+<span class="hljs-keyword">var</span> Backbone = <span class="hljs-built_in">require</span>(<span class="hljs-string">'backbone'</span>);
+<span class="hljs-keyword">var</span> cnxSvc = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lib/connectivity'</span>);
+
+<span class="hljs-built_in">module</span>.exports = Backbone.Model.extend({
+  defaults: {</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Dernière géolocalisation en date</p></div></div><div class="code"><div class="wrapper">    lat: <span class="hljs-number">0</span>,
+    lng: <span class="hljs-number">0</span>,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>UUID Google Maps &gt; Places du POI sélectionné</p></div></div><div class="code"><div class="wrapper">    placeId: <span class="hljs-literal">null</span>,</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Dernière liste des POIs récupérés</p></div></div><div class="code"><div class="wrapper">    places: [],</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Commentaire saisi par l&#39;utilisateur</p></div></div><div class="code"><div class="wrapper">    comment: <span class="hljs-string">''</span>
+  },</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Définition d&#39;attributs automatiques dérivés : <code>checkInForbidden</code> et
+<code>fetchPlacesForbidden</code>.</p></div></div><div class="code"><div class="wrapper">  initialize: <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
+    <span class="hljs-keyword">var</span> that = <span class="hljs-keyword">this</span>;
+    checkCheckinable();
+    checkFetchable();
+
+    <span class="hljs-keyword">this</span>.on(<span class="hljs-string">'change'</span>, checkCheckinable);
+    Backbone.Mediator.subscribe(<span class="hljs-string">'connectivity:online'</span>, checkFetchable);
+    Backbone.Mediator.subscribe(<span class="hljs-string">'connectivity:offline'</span>, checkFetchable);
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">checkCheckinable</span><span class="hljs-params">()</span> </span>{
+      that.set(<span class="hljs-string">'checkInForbidden'</span>, that.get(<span class="hljs-string">'placeId'</span>) === <span class="hljs-literal">null</span>);
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">checkFetchable</span><span class="hljs-params">()</span> </span>{
+      that.set(<span class="hljs-string">'fetchPlacesForbidden'</span>, !cnxSvc.isOnline());
+    }
+  },
+
+  getPlace: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getPlace</span><span class="hljs-params">()</span> </span>{
+    <span class="hljs-keyword">return</span> _.findWhere(<span class="hljs-keyword">this</span>.get(<span class="hljs-string">'places'</span>), { id: <span class="hljs-keyword">this</span>.get(<span class="hljs-string">'placeId'</span>) });
+  }
+});</div></div></div></div></body></html>

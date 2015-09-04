@@ -1,0 +1,50 @@
+<!DOCTYPE html><html lang="en"><head><title>package</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content=""><meta name="groc-document-path" content="package"><meta name="groc-project-path" content="package.json"><link rel="stylesheet" type="text/css" media="all" href="assets/style.css"><script type="text/javascript" src="assets/behavior.js"></script><body><div id="meta"><div class="file-path">package.json</div></div><div id="document"><div class="segment"><div class="code"><div class="wrapper">{
+  "<span class="hljs-attribute">author</span>": <span class="hljs-value"><span class="hljs-string">"Christophe Porteneuve"</span></span>,
+  "<span class="hljs-attribute">name</span>": <span class="hljs-value"><span class="hljs-string">"js-total-spa"</span></span>,
+  "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"SPA basis for day #3 of JS Total  training"</span></span>,
+  "<span class="hljs-attribute">private</span>": <span class="hljs-value"><span class="hljs-literal">true</span></span>,
+  "<span class="hljs-attribute">version</span>": <span class="hljs-value"><span class="hljs-string">"2.0.0"</span></span>,
+  "<span class="hljs-attribute">homepage</span>": <span class="hljs-value"><span class="hljs-string">"http://www.js-attitude.fr/js-total/"</span></span>,
+  "<span class="hljs-attribute">engines</span>": <span class="hljs-value">{
+    "<span class="hljs-attribute">node</span>": <span class="hljs-value"><span class="hljs-string">"~0.10.24"</span>
+  </span>}</span>,
+  "<span class="hljs-attribute">scripts</span>": <span class="hljs-value">{
+    "<span class="hljs-attribute">start</span>": <span class="hljs-value"><span class="hljs-string">"brunch watch --server"</span></span>,
+    "<span class="hljs-attribute">test</span>": <span class="hljs-value"><span class="hljs-string">"NODE_PATH=app:test-stub-modules mocha -R spec"</span></span>,
+    "<span class="hljs-attribute">testing</span>": <span class="hljs-value"><span class="hljs-string">"NODE_PATH=app:test-stub-modules mocha -R spec -w"</span></span>,
+    "<span class="hljs-attribute">test-cov</span>": <span class="hljs-value"><span class="hljs-string">"NODE_PATH=app:test-stub-modules istanbul cover -x 'app/externals/**' --dir test-reports node_modules/.bin/_mocha"</span></span>,
+    "<span class="hljs-attribute">sync-socket</span>": <span class="hljs-value"><span class="hljs-string">"cp node_modules/socket.io/node_modules/socket.io-client/socket.io.js app/externals"</span></span>,
+    "<span class="hljs-attribute">sync-socket-win</span>": <span class="hljs-value"><span class="hljs-string">"copy node_modules\\socket.io\\node_modules\\socket.io-client\\socket.io.js app\\externals"</span>
+  </span>}</span>,
+
+  "<span class="hljs-attribute">//</span>": <span class="hljs-value"><span class="hljs-string">"Dep groups below: Brunch &amp; plugins / Brunch production output / Dev server / Tests"</span></span>,
+  "<span class="hljs-attribute">devDependencies</span>": <span class="hljs-value">{
+    "<span class="hljs-attribute">brunch</span>": <span class="hljs-value"><span class="hljs-string">"^1.7.17"</span></span>,
+    "<span class="hljs-attribute">javascript-brunch</span>": <span class="hljs-value"><span class="hljs-string">"^1.7.1"</span></span>,
+    "<span class="hljs-attribute">css-brunch</span>": <span class="hljs-value"><span class="hljs-string">"^1.7.0"</span></span>,
+    "<span class="hljs-attribute">less-brunch</span>": <span class="hljs-value"><span class="hljs-string">"^1.7.2"</span></span>,
+    "<span class="hljs-attribute">stylus-brunch</span>": <span class="hljs-value"><span class="hljs-string">"^1.7.0"</span></span>,
+    "<span class="hljs-attribute">jade-brunch</span>": <span class="hljs-value"><span class="hljs-string">"^1.8.1"</span></span>,
+    "<span class="hljs-attribute">appcache-brunch</span>": <span class="hljs-value"><span class="hljs-string">"^1.7.1"</span></span>,
+
+    "<span class="hljs-attribute">clean-css</span>": <span class="hljs-value"><span class="hljs-string">"^2.2.12"</span></span>,
+    "<span class="hljs-attribute">clean-css-brunch</span>": <span class="hljs-value"><span class="hljs-string">"&gt; 1.0 &lt; 1.8"</span></span>,
+    "<span class="hljs-attribute">uglify-js</span>": <span class="hljs-value"><span class="hljs-string">"^2.4.15"</span></span>,
+    "<span class="hljs-attribute">uglify-js-brunch</span>": <span class="hljs-value"><span class="hljs-string">"&gt; 1.0 &lt; 1.8"</span></span>,
+
+    "<span class="hljs-attribute">body-parser</span>": <span class="hljs-value"><span class="hljs-string">"^1.5.2"</span></span>,
+    "<span class="hljs-attribute">backbone</span>": <span class="hljs-value"><span class="hljs-string">"^1.1.2"</span></span>,
+    "<span class="hljs-attribute">errorhandler</span>": <span class="hljs-value"><span class="hljs-string">"^1.1.1"</span></span>,
+    "<span class="hljs-attribute">express</span>": <span class="hljs-value"><span class="hljs-string">"^4.7.2"</span></span>,
+    "<span class="hljs-attribute">lowdb</span>": <span class="hljs-value"><span class="hljs-string">"^0.3.1"</span></span>,
+    "<span class="hljs-attribute">morgan</span>": <span class="hljs-value"><span class="hljs-string">"^1.2.2"</span></span>,
+    "<span class="hljs-attribute">socket.io</span>": <span class="hljs-value"><span class="hljs-string">"1.1.0"</span></span>,
+
+    "<span class="hljs-attribute">chai</span>": <span class="hljs-value"><span class="hljs-string">"^1.9.2"</span></span>,
+    "<span class="hljs-attribute">cheerio</span>": <span class="hljs-value"><span class="hljs-string">"^0.17.0"</span></span>,
+    "<span class="hljs-attribute">istanbul</span>": <span class="hljs-value"><span class="hljs-string">"^0.3.2"</span></span>,
+    "<span class="hljs-attribute">jquery</span>": <span class="hljs-value"><span class="hljs-string">"^2.1.1"</span></span>,
+    "<span class="hljs-attribute">mocha</span>": <span class="hljs-value"><span class="hljs-string">"^1.21.4"</span></span>,
+    "<span class="hljs-attribute">sinon</span>": <span class="hljs-value"><span class="hljs-string">"^1.10.3"</span>
+  </span>}
+</span>}</div></div></div></div></body></html>

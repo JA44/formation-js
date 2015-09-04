@@ -1,0 +1,16 @@
+{
+  "glob": [
+    "app/*.js",
+    "app/lib/*.js",
+    "app/models/*.js",
+    "app/views/**/*.js",
+    "test/**/*.js",
+    "tests-phantomjs/*.js",
+    "brunch-config.coffee",
+    "jst-server.coffee",
+    "package.json",
+    ".groc.json"
+  ],
+  "github": false,
+  "strip": "--no-strip"
+}

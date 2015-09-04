@@ -1,0 +1,36 @@
+<!DOCTYPE html><html lang="en"><head><title>app/views/history_view</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content="../../"><meta name="groc-document-path" content="app/views/history_view"><meta name="groc-project-path" content="app/views/history_view.js"><link rel="stylesheet" type="text/css" media="all" href="../../assets/style.css"><script type="text/javascript" src="../../assets/behavior.js"></script><body><div id="meta"><div class="file-path">app/views/history_view.js</div></div><div id="document"><div class="segment"><div class="comments "><div class="wrapper"><h1 id="contrleur-zone-historique">Contrôleur zone historique</h1></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="hljs-pi">
+'use strict'</span>;
+
+<span class="hljs-keyword">var</span> _ = <span class="hljs-built_in">require</span>(<span class="hljs-string">'underscore'</span>);
+<span class="hljs-keyword">var</span> Backbone = <span class="hljs-built_in">require</span>(<span class="hljs-string">'backbone'</span>);
+<span class="hljs-keyword">var</span> View = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./view'</span>);
+<span class="hljs-keyword">var</span> store = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lib/persistence'</span>);
+
+<span class="hljs-built_in">module</span>.exports = View.extend({
+  events: {
+    <span class="hljs-string">'click li'</span>: <span class="hljs-string">'showCheckInDetails'</span>
+  },</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Le template interne pour la liste et ses éléments</p></div></div><div class="code"><div class="wrapper">  listTemplate: <span class="hljs-built_in">require</span>(<span class="hljs-string">'./templates/check_ins'</span>),</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Les événements app-wide (pub/sub) auxquels on réagit</p></div></div><div class="code"><div class="wrapper">  subscriptions: {
+    <span class="hljs-string">'checkins:new'</span>: <span class="hljs-string">'insertCheckIn'</span>,
+    <span class="hljs-string">'checkins:reset'</span>: <span class="hljs-string">'render'</span>
+  },</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Le template principal</p></div></div><div class="code"><div class="wrapper">  template: <span class="hljs-built_in">require</span>(<span class="hljs-string">'./templates/history'</span>),</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Convention définie par notre classe mère View pour render : on
+peuple le template principal avec ces données.</p></div></div><div class="code"><div class="wrapper">  getRenderData: <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{
+    <span class="hljs-keyword">return</span> {
+      list: <span class="hljs-keyword">this</span>.renderTemplate({ checkIns: store.getCheckIns() }, <span class="hljs-keyword">this</span>.listTemplate)
+    };
+  },</div></div></div><div class="segment"><div class="comments "><div class="wrapper"><p>Réagit à la notif de nouveau check-in en l&#39;insérant en haut
+de la liste.</p></div></div><div class="code"><div class="wrapper">  insertCheckIn: <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(checkIn)</span> </span>{
+    checkIn.extra_class = <span class="hljs-string">'new'</span>;
+    <span class="hljs-keyword">this</span>.$(<span class="hljs-string">'#history'</span>).prepend(<span class="hljs-keyword">this</span>.renderTemplate({ checkIns: [checkIn] }, <span class="hljs-keyword">this</span>.listTemplate));
+    <span class="hljs-keyword">var</span> that = <span class="hljs-keyword">this</span>;
+    _.defer(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span> </span>{ that.$(<span class="hljs-string">'#history li.new'</span>).removeClass(<span class="hljs-string">'new'</span>); });
+  },
+
+  showCheckInDetails: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">showCheckInDetails</span><span class="hljs-params">(e)</span> </span>{
+    <span class="hljs-keyword">var</span> id = <span class="hljs-keyword">this</span>.$(e.currentTarget).attr(<span class="hljs-string">'data-id'</span>);
+    <span class="hljs-keyword">if</span> (!id) {
+      <span class="hljs-keyword">return</span>;
+    }
+
+    Backbone.history.navigate(<span class="hljs-string">'check-in/'</span> + id, { trigger: <span class="hljs-literal">true</span> });
+  }
+});</div></div></div></div></body></html>

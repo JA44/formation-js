@@ -1,0 +1,761 @@
+<!doctype html>
+<html lang="fr">
+
+  <head>
+    <meta charset="utf-8">
+    <title>JS Total • 4ème partie, 19/12/2014</title>
+
+    <meta name="author" content="Christophe Porteneuve">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="css/reveal.min.css">
+    <link rel="stylesheet" href="css/theme/js-attitude.css" id="theme">
+
+    <!-- For syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/tomorrow.css">
+
+    <!-- If the query includes 'print-pdf', use the PDF print sheet -->
+    <script>
+      if (window.location.search.match( /print-pdf/gi))
+        document.write( '<link rel="stylesheet" href="css/print/pdf.css" type="text/css" media="all">' );
+      else
+        document.write( '<link rel="stylesheet" href="css/print/paper.css" type="text/css" media="print">' );;
+    </script>
+
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+
+  <body class="no-anims">
+
+    <div class="reveal">
+
+      <!-- Used to fade in a background when a specific slide state is reached -->
+      <div class="state-background"></div>
+
+      <!-- Any section element inside of this container is displayed as a slide -->
+      <div class="slides">
+        <section id="intro">
+          <h1>JS Total</h1>
+          <h3 data-marker="intro-date">4ème partie, 19/12/2014</h3>
+          <h4 data-marker="intro-trainers">Jonathan Blanchet @ JS Attitude</h4>
+          <script>
+            // Delicously hacky. Look away.
+            if( navigator.userAgent.match( /(iPhone|iPad|iPod|Android)/i ) ) document.write( '<p style="color: rgba(0,0,0,0.3); text-shadow: none;">('+'Tap to navigate'+')</p>' );
+          </script>
+        </section>
+
+        <section id="overview">
+          <h1>JS Total</h1>
+          <h4 data-marker="overview-dates">4 journées du 16 au 19 décembre</h4>
+
+          <p><span data-marker="day4">Aujourd’hui</span>&nbsp;: industrialisation et web mobile</p>
+        </section>
+
+        <section id="testing">
+          <section class="chapter">
+            <h1>Tester</h1>
+            <h4>Ce qui vaut pour le back, vaut pour le front</h4>
+
+            <aside class="notes" data-markdown>
+              Tranquilité du développeur, qualité finale du produit
+
+              tests unitaires (fonction par fonction) VS tests d'intégration / fonctionnels (scénario complet)
+
+              TDD :
+
+              * bug = 1 test, la correction après
+              * dev : lire la spec, écrire le test, passer les tests
+
+              difficultés supposées : asynchronisme, navigateurs
+
+              pas de souci technique : c'est culturel. Mais le Web a maintenant besoin de qualité
+
+              Sinon, Jasmine, Mocha, Selenium, PhantomJS, casperJS
+            </aside>
+          </section>
+
+          <section id="testing-mocha">
+            <h1>Mocha</h1>
+
+            <p>Universel, issu de Node, particulièrement fort pour tester les aspects <strong>asynchrones</strong></p>
+            <p>Système d’assertions libre (délégué)</p>
+            <p>Contextes imbriqués, before/after classiques</p>
+            <p>Facilités de ciblage temporaire (inclusif/exclusif)</p>
+            <p>Et plein d’autres trucs bien&nbsp;!</p>
+            <p><a href="http://visionmedia.github.com/mocha/">visionmedia.github.com/mocha</a></p>
+
+            <aside class="notes" data-markdown>
+              Dérouler l'ensemble de la page officielle.
+
+              * assertion au choix (shoot.js, expect.js (jasmine), chai)
+              * asynchrone : un callback avec .done() et il comprend
+              * pendings tests
+              * test duration : plus de 50 ms = warning de lenteur. plus de 100 = erreur
+              * fait pour Node, mais peut aussi marcher dans browser
+              * grosse liste de reporter (dont html, json, tap et surtout spec
+
+               Insister sur la simplicité de l'asynchrone et du focus sur un seul `describe`/`it` (avec `.only`).  Bien indiquer que c'est avant tout conçu pour de la CLI dans un contexte Node, mais marche aussi dans un browser.
+
+              Le `npm install` d'origine a dû le coller là, et le `package.json` doit contenir un `npm run testing` qui marche pour les *nix (à voir sur Windows, vu l'override d'environnement qui normalement demande un `set` à part).
+
+              Coller dans `test` un `collection.js` qui va reprendre les tests d'ordre naturel, mais en 100% Node cette fois-ci.  Partir soit à froid, soit sur base du test QUnit qu'on refactorisera petit à petit.  En particulier, faire les émulations nécessaires (`navigator` et `Backbone` globaux, etc.) au fur et à mesure des échecs.
+
+              * test/collection.js
+              * copier / coller depuis la HP mocha (1 2 3 mocha) pour la syntaxe
+              * npm run testing
+              * récupérer le code de qunit > collection.js
+              * copier code de test() dans it()
+              * copier le code de setup() dans beforeEach(function() {})
+              * deepEqual à remplacer par assert.deepEqual
+              * global.Backbone = require('backbone');
+              * global.navigator = {}
+              * it('attend une implémentation');
+
+              Bien insister sur la réactivité du watcher et la vitesse d'exé du test :-)
+
+it('va vite', function (done) {
+  // timeout de ce test
+  this.timeout(1000);
+  // appel de done pour dire ok c'est fini
+  setTimeout(done, 50); // 20 = rapide, 50 = moyen, 80 = lent
+});
+
+              Faire des démos de pending et d'asynchrone (à coup de `setTimeout` à 30 / 80 ms, voire rien pour timeout) en fin de spec, une fois le reste ancré.
+
+              Couverture de test : démo possible avec un `npm run test-cov`.
+            </aside>
+          </section>
+
+          <section id="mocha-ui">
+            <h1>Mocha : BDD</h1>
+
+            <pre><code data-trim data-noescape class="javascript" data-file="test/collection_spec.js">
+<u>describe</u>('The collection', function() {
+  <u>before</u>(function() { … });     // Avant l'ensemble du `describe`
+
+  <u>beforeEach</u>(function() { … }); // Avant chaque `it`
+
+  // Et aussi : `after`, `afterEach`
+
+  <u>it</u>('should maintain the natural order', function() {
+    // Setup du test et assertions ici
+  });
+});
+            </code></pre>
+
+            <pre><code data-trim data-noescape class="no-highlight">
+<span class="prompt">$ mocha test/collection_spec.js</span>
+
+  The collection
+    <span class="green">✓</span> <span class="gray">should maintain the natural order</span>
+
+  <span class="green">1 passing</span> <span class="gray">(27ms)</span>
+            </code></pre>
+          </section>
+
+          <section id="chai">
+            <h1><a href="http://chaijs.com/">Chai</a></h1>
+
+            <p>Assertions riches (+ tonnes de plugins) &amp; choix de style</p>
+
+            <table class="table lines rightLabels">
+              <thead>
+                <tr>
+                  <th><a href="http://chaijs.com/guide/styles/">Syntaxe</a></th>
+                  <th>Exemples</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Assert</td>
+                  <td>
+                    <pre><code data-trim data-noescape class="javascript">
+assert.typeOf(foo, 'string', 'foo is a string');
+assert.equal(foo, 'bar', 'foo equal `bar`');
+assert.lengthOf(foo, 3, 'foo`s value has a length of 3');
+assert.lengthOf(beverages.tea, 3, 'beverages has 3 types of tea');
+                    </code></pre>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Expect</td>
+                  <td>
+                    <pre><code data-trim data-noescape class="javascript">
+expect(foo).to.be.a('string');
+expect(foo).to.equal('bar');
+expect(foo).to.have.length(3);
+expect(beverages).to.have.property('tea').with.length(3);
+                    </code></pre>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Should</strong></td>
+                  <td>
+                    <pre><code data-trim data-noescape class="javascript">
+foo.should.be.a('string');
+foo.should.equal('bar');
+foo.should.have.length(3);
+beverages.should.have.property('tea').with.length(3);
+                    </code></pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section id="testing-sinon">
+            <h1>sinon.js</h1>
+            <h4>De qui se moque-t-on&nbsp;?</h4>
+
+            <p><strong>Attention&nbsp;: tuerie</strong></p>
+            <p>Outil de spies/mocks/stubs hyper bien foutu</p>
+            <p>Mocke carrément Ajax, les APIs REST et le temps&nbsp;!</p>
+            <p>Indispensable pour découpler le code testé de ses dépendances externes, ce qui est une bonne pratique incontournable en unitaire/fonctionnel.</p>
+            <p><a href="http://sinonjs.org/">sinonjs.org</a></p>
+
+            <aside class="notes" data-markdown>
+              Recommandé pour toute situation de mocking, quel que soit le contexte/harnais.  Éviter notamment la fonctionnalité similaire intégrée à Jasmine, qui est carrément pourrie (clock pas configurable par ex…, stub et spy).
+
+              Bien montrer, au travers de la page officielle, la hiérarchie spy -> stub -> mock
+
+              * spy : log tous les appels à une fonction (this, arguments, return, timestamps…). Ne touche pas à la fonctionnalité
+              * stub : remplace la méthode d'origine. Genre $.ajax
+              * Mock : composé de stubs, pour simuler une API complète
+              * fake timers : pour tester animations, timeouts, horloges… Remplace setTimeout, setInterval, clear, Date …
+              * fake XHR mais encore mieux le fake server* pour définir comment un serveur XHR doit répondre
+
+            </aside>
+          </section>
+
+          <section id="sinon-timers">
+            <h1>Maître du temps</h1>
+            <p>Sinon permet de prendre la main sur toute la gestion du temps*</p>
+
+            <pre><code data-trim data-noescape class="javascript" data-file="test/persistence_spec.js">
+var clock = sinon.<u>useFakeTimers</u>(); // Gel du temps
+// …
+clock.<u>tick(1)</u>;
+// …
+clock.<u>restore</u>();
+            </code></pre>
+
+            <pre><code data-trim data-noescape class="javascript" data-file="test-phantomjs/home_view_spec.js">
+clock = sinon.useFakeTimers(<u>1412507461204</u>); // Reset à un moment donné + gel
+// …
+clock.tick(1000);
+// …
+clock.restore();
+            </code></pre>
+
+            <footer>*
+              <code>new Date</code>, <code>Date.now()</code>,
+              <code>setTimeout</code>, <code>clearTimeout</code>,
+              <code>setInterval</code>, <code>clearInterval</code>,
+              <code>setImmediate</code>, <code>clearImmediate</code>
+            </footer>
+          </section>
+
+          <section id="sinon-server">
+            <h1>Pas besoin du serveur</h1>
+
+            <p>Tester le client en isolation, sans serveur !</p>
+            <p>Au top pour tester les cas d’erreur et isoler du serveur effectif.</p>
+
+            <pre><code data-trim data-noescape class="javascript" data-file="test-phantomjs/persistence_spec.js">
+xhr = sinon.<u>fakeServer.create</u>();
+
+// …
+
+var req = _(xhr.<u>requests</u>).findWhere({ method: 'POST' });
+req.<u>respond</u>(201, { 'Content-Type': 'application/json' }, '{"id":42}');
+
+// …
+
+xhr.<u>restore</u>();
+            </code></pre>
+          </section>
+
+          <section id="testing-automation">
+            <h1>Automatiser les navigateurs</h1>
+
+            <p><a href="http://seleniumhq.org/">Selenium</a></p>
+            <p><a href="http://karma-runner.github.io/">Karma</a></p>
+            <p><a href="http://phantomjs.org/">PhantomJS</a> et <a href="http://slimerjs.org/">SlimerJS</a></p>
+            <p><a href="http://casperjs.org/">CasperJS</a>, <a href="https://github.com/jonleighton/poltergeist">Poltergeist</a>…</p>
+            <p>(et le harnais/serveur <a href="https://github.com/creativelive/spook">Spook</a>)</p>
+
+            <aside class="notes" data-markdown>
+              Selenium :
+
+              * 20 ans, par Saucelabs
+              * TOUS les navigateurs
+              * simule TOUT : prompt, upload, screenshot, saisie progressive de texte, réglages utilisateur …
+              * langage de script propre
+              * mais Selenium RC = connecteurs pour le piloter
+              * un paquet de VMs
+
+              Karma :
+              * ex testacular
+              * concurrent direct Selenium
+              * moins de features
+              * pas IE !
+
+              Phantom / Slimer :
+              * webkit (équivalent chrome 22 + V8) ou gecko
+              * solide, rapide
+              * screenshot, navigation, exécution de JS dans la page
+              * manque certaines actions comme drag/drop
+              *
+
+
+              TrifleJS :
+
+              * IE headless (en pratique v8 + WebComponent de la CLR, mais plutôt bien équivalent, au final).
+              * IE récent donc, un jour
+
+              CasperJS :
+
+              * pilote Phantom, slimer et trifle
+              * API bcp + lisible
+              * pilotable depuis NodeJS avec SpookyJS
+
+              Casper 2
+              * sera un vrai module Node
+              * API async en promise
+
+              Poltergeist en Ruby
+
+              Faire une démo de CasperJS basée sur 3 exemples :
+              [Google Links](https://github.com/n1k0/casperjs/blob/master/samples/googlelinks.js),
+              [Screenshot](https://github.com/n1k0/casperjs/blob/master/samples/screenshot.js) (changer le sélecteur à `.js-stream-item`, si ça bloque) et
+              [Google Suggest](https://gist.github.com/n1k0/5477539) (s'il remarche…)
+
+              Indiquer que la combo Mocha + CasperJS, qui nécessite encore un peu de tripatouillages mais sera bientôt fluidifiée, constitue une solution de référence ces temps-ci pour des tests d'inté *headless* donc en CI…
+            </aside>
+          </section>
+
+          <section id="mocha-phantomjs">
+            <h1>Mocha-PhantomJS</h1>
+            <p>Bridge prédéfini permettant d’exécuter mocha aussi bien dans un navigateur, interactivement, que dans un PhantomJS</p>
+
+            <pre><code data-trim data-noescape class="javascript" data-file="test-phantomjs/persistence_spec.html">
+&lt;div id="mocha"&gt;&lt;/div&gt;
+<u>&lt;script src="../node_modules/mocha/mocha.js"&gt;&lt;/script&gt;</u>
+&lt;script&gt;<u>mocha.ui('bdd').reporter('html').slow(250);</u>&lt;/script&gt;
+&lt;script src="../public/app.js"&gt;&lt;/script&gt;
+&lt;script src="./persistence_spec.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+<u>if (window.mochaPhantomJS) { mochaPhantomJS.run(); }
+else { mocha.run(); }</u>
+&lt;/script&gt;
+            </code></pre>
+
+            <pre><code data-trim data-noescape class="no-highlight">
+<span class="prompt">$ mocha-phantomjs test-phantomjs/persistence_spec.html</span>
+
+  The persistence layer
+    <span class="green">✓</span> <span class="gray">should properly merge sync-based data in the local cache</span>
+
+  <span class="green">1 passing</span> <span class="gray">(31ms)</span>
+            </code></pre>
+          </section>
+
+          <section id="testing-paas">
+            <h1>Les VM en PaaS</h1>
+
+            <p><a href="http://www.browserstack.com/">Browserstack</a> (et <a href="http://modern.ie">modern.ie</a>)</p>
+            <p><a href="https://saucelabs.com/">SauceLabs</a>*</p>
+
+            <footer>* À la main avec
+              <a href="https://saucelabs.com/javascript/">JS Unit Testing on Sauce</a>,
+              <a href="https://saucelabs.com/javascript/mocha-js">Mocha JS on Sauce</a>,
+              <a href="https://docs.saucelabs.com/tutorials/node-js/">Node.js on Sauce</a>,
+              <a href="https://docs.saucelabs.com/reference/rest-api/">l’API REST</a>,
+              ou (en théorie…)
+              <a href="https://github.com/pbakaus/mocha-sauce">mocha-sauce</a>.
+              Mais aussi via Karma avec
+              <a href="https://github.com/karma-runner/karma-sauce-launcher">karma-sauce-launcher</a>, ou via <a href="http://theintern.io/">Intern</a>…
+            </footer>
+
+            <aside class="notes" data-markdown>
+              Pour avoir rapidement des versions très spécifiques :
+
+              * SauceLabs et BrowserStack
+              * SauceLabs au niveau scripting a l'air plus robuste. forfait unique pour les usages manuel et auto, enregistrement vidéo de l'auto
+              * BrowserStack : 30 mn grauites pour de l'interactif
+              * mobiles dans simulateur
+              * Saucelabs : pilotable via tout langage
+
+            </aside>
+          </section>
+        </section>
+
+        <section id="documenting">
+          <section class="chapter">
+            <h1>Documenter</h1>
+            <h4>Les autres c’est toi dans 6 mois</h4>
+          </section>
+
+          <section id="doc-jsdoc">
+            <h1>Traditionnel</h1>
+
+            <p><a href="http://usejsdoc.org/">JSDoc 3</a></p>
+            <p>Façon Javadoc&nbsp;: commentaires spéciaux, tags…</p>
+            <p><a href="http://yui.github.com/yuidoc/">YUIDoc</a> est similaire mais plus moderne, et avec un mode serveur/watcher.</p>
+
+            <aside class="notes" data-markdown>
+              classique :
+
+              * format connu (@param …)
+              * va très loin (dépendances, formatage)
+              * gros effort de mise en forme de la part de l'équipe
+              * souvent fastidieux à faire et lire
+
+            </aside>
+          </section>
+
+          <section id="doc-docco">
+            <h1>Literate</h1>
+
+            <p><a href="http://jashkenas.github.com/docco/">Docco</a> / <a href="http://nevir.github.io/groc/">Groc</a></p>
+            <p>(démo sur le code final de la SPA)</p>
+
+            <aside class="notes" data-markdown>
+              Source annoté :
+
+              * facile à installer (npm, watch)
+              * facile à maintenir (commentaires dans le code)
+              * Markdown, syntax highlighter, double colonne
+              * utilisé par backbone et underscore
+              * groc est une évolution de docco
+
+              Toujours utile, facile à mettre en œuvre.  Démo avec un appel `docco.sh` à la racine de `spa-final` (à migrer vers une config Groc…)
+            </aside>
+          </section>
+
+          <section id="doc-hosting">
+            <h1>Hébergement des docs</h1>
+
+            <p><a href="http://readthedocs.org/">readthedocs.org</a></p>
+            <p>Public / protégé / privé</p>
+            <p>Github / Bitbucket / Webhooks</p>
+            <p>Versionné</p>
+            <p>slugs/rtfd.org, CNAMEs…</p>
+            <p>+ <a href="https://www.google.fr/search?q=site%3Amedia.readthedocs.org+filetype%3Apdf">PDF</a> + manpages</p>
+
+            <aside class="notes" data-markdown>
+              La démo ultime : [docs de Casper](http://docs.casperjs.org/en/latest/).  Thèmes, exports PDF/ePub, recherche, versioning, images, colorisation syntaxique, etc.
+
+              Hélas pas basé sur du source annoté ou même du Markdown mais sur le moteur de documentation Sphinx (format puissant ceci dit).
+            </aside>
+          </section>
+        </section>
+
+        <section id="mobile">
+          <section class="chapter">
+            <h1>Et sur mobile&nbsp;?</h1>
+            <h4>Le nouveau web c’est lui</h4>
+          </section>
+
+          <section id="mobile-constraints">
+            <h1>Contraintes</h1>
+
+            <p>Cool : «&nbsp;HTML5&nbsp;» (CSS3, WebSockets, localStorage…)</p>
+            <p>Dimensions d’image (max 1000 &times; 1000)</p>
+            <p>Cache classique (max 25Ko/fichier, pré-GZip)</p>
+            <p>Appcache (tout sauf la vidéo)</p>
+            <p>Canaux de chargement (2–6 suivant le réseau)</p>
+          </section>
+
+          <section id="mobile-ux">
+            <h1>UX homogène</h1>
+
+            <p>User scaling &amp; <a href="https://developer.mozilla.org/fr/docs/Mobile/Viewport_meta_tag">viewport</a> (initial + modifiable)</p>
+            <p><a href="http://mir.aculo.us/2013/01/26/why-and-how-to-not-use-hover-styles-on-touch-devices/">Pas de survol</a></p>
+            <p>Événements tactiles</p>
+            <p><a href="http://smus.com/mouse-touch-pointer/">pointer.js</a> et les <a href="https://github.com/Polymer/PointerEvents">Pointer Events</a></p>
+            <p><a href="http://www.w3.org/TR/2013/WD-pointerevents-20130115/#the-touch-action-css-property">Tactile en contexte mixte</a></p>
+            <p><a href="http://www.w3.org/TR/mwabp/">Meilleures pratiques du W3C</a></p>
+          </section>
+
+          <section id="mobile-rwd">
+            <h1>Quelle adaptation&nbsp;?</h1>
+
+            <p>Media Queries &amp; Responsive Web Design (RWD)… jusqu'à un certain point (ça peut quand même aller loin)</p>
+            <p>Une qualité d'UX et de BP 100% optimale nécessitera souvent des UIs distinctes :-/</p>
+          </section>
+
+          <section id="mobile-webapp">
+            <h1>Mobile Web Apps</h1>
+
+            <p>Les meta dédiées
+              (<a href="http://speckyboy.com/2012/05/16/creating-a-mobile-web-application-with-meta-tags/">ici</a> et
+              <a href="http://developer.apple.com/library/safari/#documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html">ici</a>)
+            </p>
+            <p><a href="http://www.html5rocks.com/en/mobile/mobifying/">Plein d'autres astuces</a></p>
+            <p>Add to Home Screen (pénible sur Android)</p>
+            <p>Applis hybrides light (juste une WebView, tout online) et lourdes (tout embarqué)</p>
+            <p><a href="http://phonegap.com/">Phonegap</a> / <a href="http://cordova.apache.org/">Cordova</a></p>
+            <p><a href="http://www.mozilla.org/fr/firefoxos/">Firefox OS</a> et le futur…</p>
+          </section>
+        </section>
+
+        <section id="optimizing">
+          <section class="chapter">
+            <h1>Optimiser</h1>
+            <h4>Load, Parse, Run, Render</h4>
+
+            <p><a href="http://fr.slideshare.net/jpvincent/introduction-a-la-webperf">Pourquoi aller vite ?</a></p>
+          </section>
+
+          <section id="loading-weight-1">
+            <h1>Chargement</h1>
+
+            <h3>Desktop vs. mobile</h3>
+            <p>De 2 à 6 canaux par <abbr title="Fully-Qualified Domain Name">FQDN</abbr></p>
+
+            <h3>Critical Path</h3>
+            <p>Limiter les bloquants (CSS <a href="https://www.youtube.com/watch?v=FEs2jgZBaQA">critique</a> <em>inlinée</em> en head, JS critique en bas du body, pourquoi pas sur le même FQDN que la page)</p>
+
+            <h3>Concaténation</h3>
+
+            <p>Des scripts et CSS (<a href="http://brunch.io">Brunch</a>, <a href="http://browserify.org/">Browserify</a>, <a href="http://requirejs.org/docs/optimization.html">r.js</a>) — Penser à contextualiser</p>
+
+            <aside class="notes" data-markdown>
+              chargement JS asynchrone justifié dans certains cas (pages très lourdes, modulaire). Voire CSS (facebook)
+            </aside>
+          </section>
+
+          <section id="loading-weight-2">
+            <h1>Chargement</h1>
+
+            <h3>Spriting, fontes icôniques</h3>
+
+            <p>Avec <a href="http://glue.readthedocs.org/en/latest/">Glue</a>, <a href="http://fortawesome.github.io/Font-Awesome/">Font Awesome</a>, et tuning via <a href="http://icomoon.io/app/">l'app Icomoon</a></p>
+
+            <h3>Minification / opti images</h3>
+
+            <p>Des scripts (<a href="http://lisperator.net/uglifyjs/">UglifyJS</a>) et CSS (<a href="https://github.com/jakubpawlowicz/clean-css">Clean-CSS</a>), des images (<a href="http://imageoptim.com/">ImageOptim</a>, etc.) et notamment grosses photos JPEG (<a href="http://www.jpegmini.com/">JPEGmini</a>).</p>
+
+            <h3>Compression (gzipping)</h3>
+
+            <p>Avec <a href="http://www.feedthebot.com/pagespeed/enable-compression.html">Apache, nginx</a>, <a href="http://technet.microsoft.com/en-us/library/cc771003%28WS.10%29.aspx">IIS</a>…  Et notamment le <a href="http://nginx.org/en/docs/http/ngx_http_gzip_static_module.html">gzip statique</a>. Et <a href="http://www.html5rocks.com/fr/tutorials/speed/txt-compression/">lisez ça</a> !</p>
+
+            <aside class="notes" data-markdown>
+              Glue : générateur, à partir de fichiers, de sprites + css associé
+
+              démo imageOptim, à partir d'images du bureau, montrer les exe dans preferences pendant que ça optimise, avec la charge proc à côté.
+
+              jpgemini avec l'image du bureau
+
+              ex: jquery original : 300Ko => minifié => 90Ko => gzipé => 32.5Ko
+            </aside>
+          </section>
+
+          <section id="loading-weight-3">
+            <h1>Chargement</h1>
+
+            <h3>Cache HTTP</h3>
+
+            <p>Utilisez correctement <code>Last-Modified</code> et <code>If-Modified-Since</code>, <code>Max-Age</code>, <code>E-Tag</code>, <code>Pragma</code> et <code>Cache-Control</code>, les codes de retour 304…  <a href="http://www.mnot.net/cache_docs/">Apprenez ça une bonne fois</a>.</p>
+
+            <h3>Cookieless asset hosting…</h3>
+
+            <p>Servez vos assets statiques depuis des FQDN sans cookies. <code>assets.monsite.fr</code> ou <code>assets-monsite.fr</code>.</p>
+
+            <h3>…voire CDN</h3>
+
+            <p><a href="http://aws.amazon.com/fr/s3/">S3</a> / <a href="http://aws.amazon.com/fr/cloudfront/">CloudFront</a>, <a href="https://www.fastly.com/">fastly</a>…</p>
+
+            <aside class="notes" data-markdown>
+              les devs n'aiment pas gérer le cache, marre du "vide ton cache"
+
+              technique idéale en PROD : cache long, gestion fine des URLs
+
+              parler de la technique de MAJ JS de GMaps
+            </aside>
+          </section>
+
+          <section id="loading-loaders">
+            <h1>Chargement</h1>
+            <h4>Parallélisation</h4>
+
+            <h3>Synchrone vs. asynchrone</h3>
+
+            <p>Les synchrones (balise <code>script</code> dans le HTML servi de base) sont bloquants</p>
+
+            <h3>JS tierce-partie</h3>
+
+            <p>Fuyez tout ce qui <code>document.write</code> !</p>
+
+            <h3>Loaders vs. concaténation</h3>
+
+            <p>La concaténation gagne pratiquement toujours.</p>
+            <aside class="notes" data-markdown>
+              Loader async, CSS compris : technique facebook
+            </aside>
+          </section>
+
+          <section id="loading-loaders-2">
+            <h1>Chargement</h1>
+            <h4>Parallélisation</h4>
+
+            <h3><a href="https://developer.mozilla.org/fr/docs/FAQ_sur_le_pr%C3%A9chargement_des_liens">Prefetching</a></h3>
+
+            <p>Pour des chemins de navigation ultra-dominants.</p>
+
+            <h3><a href="http://appcache.offline.technology/">AppCache</a></h3>
+
+            <p>Pour charger une tonne une bonne fois, et être tranquilles ensuite…</p>
+            <aside class="notes" data-markdown>
+              Attributs rel= prefetch et prerender. Généralement plutôt fait main => technique Yahoo! mail
+            </aside>
+          </section>
+
+          <section id="parsing">
+            <h1>Parsing</h1>
+
+            <h3>CSS</h3>
+
+            <p>Gare aux sélecteurs mal optimisés et aux <a href="https://www.youtube.com/watch?v=FEs2jgZBaQA">règles inutiles</a></p>
+
+            <h3>Images</h3>
+
+            <p>Optimisez les dimensions d'origine (vignettes, etc.) et précisez les dimensions dans la page (HTML ou CSS) pour éviter un double-rendering.</p>
+
+            <h3>DOM</h3>
+
+            <p>Restez sveltes.  Apprenez à maîtriser le <a href="https://developer.mozilla.org/fr/docs/CSS/Mod%C3%A8le_de_bo%C3%AEte">Box Model</a> (et pourquoi pas <a href="http://css-tricks.com/snippets/css/a-guide-to-flexbox/">flexbox</a>) et fuyez la <a href="http://fr.wiktionary.org/wiki/divitis">divitis</a>.</p>
+
+            <aside class="notes" data-markdown>
+              Montrer DOM Monster
+            </aside>
+          </section>
+
+          <section id="runtime-js">
+            <h1>Exécution JS</h1>
+            <h4>Optis de langage pur</h4>
+
+            <p>Loop invariants</p>
+            <p>Memoization</p>
+            <p>RegExp caching</p>
+            <p>Recyclage de tableaux</p>
+            <p>Comparaisons strictes</p>
+
+            <aside class="notes" data-markdown>
+
+            </aside>
+          </section>
+
+          <section id="runtime-dom">
+            <h1>Manips DOM</h1>
+            <h4>Patterns et anti-patterns</h4>
+
+            <p>Réduire la taille au maximum</p>
+            <p>Optimisation des sélecteurs</p>
+            <p>Lookup caching</p>
+            <p>Event delegation</p>
+            <aside class="notes" data-markdown>
+              $('.element') => var container = $('#module-container'); container.find('.element'); au pire $('#module-container > li.element');
+
+              Génération de DOM : un insert massif plutôt plein de petites modifications
+
+              delegation : $('#container li').on('click', function(){}) => $('#container').on('click', 'li', function(){});
+            </aside>
+          </section>
+
+          <section id="runtime-timing">
+            <h1>Exécution périodique</h1>
+            <h4>Faire confiance au navigateur</h4>
+
+            <p><code>setTimeout</code> &amp; <code>setInterval</code></p>
+            <p><code>requestAnimationFrame</code>&nbsp;!</p>
+
+            <aside class="notes" data-markdown>
+              démo avec setTimeout(0).html
+            </aside>
+          </section>
+
+          <section id="runtime-workers">
+            <h1>Parallélisation JS</h1>
+            <h4>Des workers quand il faut</h4>
+
+            <p class="fragment">JS est mono-thread</p>
+            <p class="fragment">Je répète&nbsp;: JS est mono-thread</p>
+            <p class="fragment"><strong>sauf que…</strong></p>
+            <p class="fragment">…on a les Web Workers</p>
+            <p class="fragment">Y’a des gros garde-fous</p>
+            <p class="fragment">Cas d’utilisation classiques</p>
+          </section>
+
+          <aside class="notes" data-markdown>
+            supporté par IE10, FF, chrome, iOS 5, android 4.4
+
+            polyfill à base de setTimeout 0 => ie-web-worker
+          </aside>
+        </section>
+
+        <section id="conclusion">
+          <section class="chapter">
+            <h1>Conclusion</h1>
+            <h4>Les meilleures choses ont une fin</h4>
+          </section>
+
+          <section id="conclusion-wrapup">
+            <h1>En résumé…</h1>
+
+            <p>Web front == <strong>power</strong></p>
+            <p>Écosystème de plus en plus riche</p>
+            <p>Essor des applis riches côté client</p>
+            <p>Ça va vite se passer surtout sur mobile</p>
+            <p>JS == langage n°1</p>
+            <p>Y’a quand même de quoi s’éclater…</p>
+          </section>
+
+          <section id="thank-you">
+            <h1>Merci&nbsp;!</h1>
+
+            <p><a href="http://www.js-attitude.fr/">http://www.js-attitude.fr/</a></p>
+            <p><a href="http://twitter.com/jsattitude">@jsattitude</a></p>
+          </section>
+        </section>
+      </div>
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.min.js"></script>
+
+    <script>
+      // Full list of configuration options available here:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+
+        theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+        transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+        // Parallax scrolling
+        // parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+        // parallaxBackgroundSize: '2100px 900px',
+
+        // Optional libraries used to extend on reveal.js
+        dependencies: [
+          { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+        ]
+      });
+    </script>
+  </body>
+</html>
